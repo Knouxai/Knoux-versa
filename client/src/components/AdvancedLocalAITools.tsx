@@ -36,8 +36,8 @@ export function AdvancedLocalAITools({
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter((tool) => 
-        tool.getName(currentLanguage).toLowerCase().includes(query) ||
-        tool.getDescription(currentLanguage).toLowerCase().includes(query)
+        AiToolUtils.getName(tool, currentLanguage).toLowerCase().includes(query) ||
+        AiToolUtils.getDescription(tool, currentLanguage).toLowerCase().includes(query)
       );
     }
 
@@ -190,7 +190,7 @@ export function AdvancedLocalAITools({
                 <div className="mb-4">
                   <div className="flex items-start justify-between mb-2">
                     <h3 className="text-xl font-bold text-white group-hover:text-cyan-400 transition-colors">
-                      {tool.getName(currentLanguage)}
+                      {AiToolUtils.getName(tool, currentLanguage)}
                     </h3>
                     <div className="text-2xl">
                       {categories.find(cat => cat.id === tool.category)?.icon || "🔧"}
@@ -204,7 +204,7 @@ export function AdvancedLocalAITools({
 
                 {/* Description */}
                 <p className="text-white/70 text-sm mb-4 line-clamp-3">
-                  {tool.getDescription(currentLanguage)}
+                  {AiToolUtils.getDescription(tool, currentLanguage)}
                 </p>
 
                 {/* Model Information */}
@@ -236,13 +236,13 @@ export function AdvancedLocalAITools({
                     ✨ المميزات:
                   </div>
                   <div className="flex flex-wrap gap-1">
-                    {tool.getFeatures(currentLanguage).slice(0, 3).map((feature, index) => (
+                    {AiToolUtils.getFeatures(tool, currentLanguage).slice(0, 3).map((feature, index) => (
                       <Badge 
                         key={index}
                         variant="outline" 
                         className="text-xs bg-white/5 border-white/20 text-white/70"
                       >
-                        {feature.description_ar || feature.description_en}
+                        {feature}
                       </Badge>
                     ))}
                   </div>
