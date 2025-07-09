@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { Enhanced3DBackground } from '../components/Enhanced3DBackground';
 import { EnhancedServiceGrid } from '../components/EnhancedServiceGrid';
+import { ServiceControlPanel } from '../components/ServiceControlPanel';
 import { AdvancedImageCanvas } from '../components/AdvancedImageCanvas';
 import { PromptNexus } from '../components/PromptNexus';
 import { ProcessingModal } from '../components/ProcessingModal';
-import { AdvancedLocalAITools } from '../components/AdvancedLocalAITools';
+import { CompleteLocalAITools } from '../components/CompleteLocalAITools';
 import { AdvancedAIModelsManager } from '../components/AdvancedAIModelsManager';
 import { ArtisticTemplatesGallery } from '../components/ArtisticTemplatesGallery';
 import { TemplateProcessor } from '../components/TemplateProcessor';
+import { ComprehensiveAIWorkstation } from '../components/ComprehensiveAIWorkstation';
 import { ArtisticTemplate } from '../data/artisticTemplates';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -161,20 +163,58 @@ export default function EnhancedHome() {
                   >
                     🎨 التمبلتات الفنية +18 (50+)
                   </TabsTrigger>
+                  <TabsTrigger 
+                    value="workstation" 
+                    className="text-white data-[state=active]:bg-indigo-500/20 data-[state=active]:text-indigo-400 px-6 py-3 rounded-lg transition-all"
+                  >
+                    🚀 ورشة العمل الشاملة
+                  </TabsTrigger>
                 </TabsList>
               </div>
 
               <TabsContent value="services" className="mt-0">
-                <EnhancedServiceGrid 
-                  onServiceSelect={handleServiceSelect}
-                  selectedService={selectedService}
-                />
+                {!selectedService ? (
+                  <EnhancedServiceGrid 
+                    onServiceSelect={handleServiceSelect}
+                    selectedService={selectedService}
+                  />
+                ) : (
+                  <div className="space-y-6">
+                    <div className="flex justify-between items-center">
+                      <Button 
+                        onClick={() => setSelectedService('')}
+                        variant="ghost" 
+                        className="text-white hover:bg-white/10"
+                      >
+                        ← العودة للخدمات
+                      </Button>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                      <div className="lg:col-span-1">
+                        <ServiceControlPanel
+                          serviceId={selectedService}
+                          onProcess={handleTransform}
+                          isProcessing={isProcessing}
+                        />
+                      </div>
+                      
+                      <div className="lg:col-span-2">
+                        <AdvancedImageCanvas
+                          onImageUpload={handleImageUpload}
+                          onSelectionChange={handleSelectionChange}
+                          uploadedImage={uploadedImage}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
               </TabsContent>
 
               <TabsContent value="local-tools" className="mt-0">
-                <AdvancedLocalAITools 
+                <CompleteLocalAITools 
                   selectedTool={selectedTool}
-                  onToolSelect={(tool) => setSelectedTool(tool.id)}
+                  onToolSelect={setSelectedTool}
                 />
               </TabsContent>
 
@@ -197,6 +237,10 @@ export default function EnhancedHome() {
                     userImage={uploadedImage}
                   />
                 )}
+              </TabsContent>
+
+              <TabsContent value="workstation" className="mt-0">
+                <ComprehensiveAIWorkstation />
               </TabsContent>
             </Tabs>
           </div>

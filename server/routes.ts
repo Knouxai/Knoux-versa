@@ -146,6 +146,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Serve uploaded images
   app.use('/uploads', express.static('uploads'));
 
+  // Template processing endpoint
+  app.post('/api/process-template', upload.single('image'), async (req: Request, res: Response) => {
+    try {
+      console.log('🎨 بدء معالجة التمبلت:', req.body);
+      
+      if (!req.file) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'No image file provided' 
+        });
+      }
+
+      const { templateId, customizations } = req.body;
+      
+      if (!templateId) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Template ID is required' 
+        });
+      }
+
+      // Save uploaded image
+      const userImageUrl = `/api/uploads/${req.file.filename}`;
+      console.log('✅ تم حفظ صورة المستخدم:', userImageUrl);
+      
+      // Parse customizations
+      const parsedCustomizations = customizations ? JSON.parse(customizations) : {
+        faceBlend: 80,
+        bodyAlignment: 70,
+        clothingColor: '#FF69B4',
+        lightingIntensity: 60,
+        styleStrength: 85,
+        qualityLevel: 'ultra'
+      };
+
+      // Import template processor
+      const { templateProcessor } = await import('./ai/processors/templateProcessor');
+      
+      // Process the template
+      const result = await templateProcessor.processTemplate({
+        templateId,
+        userImageUrl,
+        customizations: parsedCustomizations
+      });
+
+      console.log('✅ اكتملت معالجة التمبلت');
+      
+      res.json(result);
+
+    } catch (error) {
+      console.error('❌ خطأ في معالجة التمبلت:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Template processing failed' 
+      });
+    }
+  });
+
   // Local Models Management Endpoints
   
   // Get all available models

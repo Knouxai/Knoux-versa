@@ -1,80 +1,9 @@
 import React from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { KnouxLogo } from './KnouxLogo';
-
-const services = [
-  {
-    id: 'magic-transform',
-    nameAr: 'التحويل السحري',
-    nameEn: 'Magic Transform',
-    icon: '✨',
-    description: 'تحويل وتعديل الصور بطرق سحرية مذهلة',
-    category: 'transform',
-    color: 'from-purple-500 to-pink-500'
-  },
-  {
-    id: 'remove-replace',
-    nameAr: 'إزالة واستبدال',
-    nameEn: 'Remove & Replace',
-    icon: '🔄',
-    description: 'إزالة الكائنات واستبدالها بأخرى جديدة',
-    category: 'edit',
-    color: 'from-blue-500 to-cyan-500'
-  },
-  {
-    id: 'style-transfer',
-    nameAr: 'نقل الأسلوب',
-    nameEn: 'Style Transfer',
-    icon: '🎨',
-    description: 'تطبيق أساليب فنية مختلفة على الصور',
-    category: 'artistic',
-    color: 'from-green-500 to-teal-500'
-  },
-  {
-    id: 'text-image-add',
-    nameAr: 'إضافة نص للصورة',
-    nameEn: 'Text2Image Add',
-    icon: '📝',
-    description: 'إضافة عناصر جديدة للصورة بالنص',
-    category: 'generate',
-    color: 'from-yellow-500 to-orange-500'
-  },
-  {
-    id: 'background-replace',
-    nameAr: 'استبدال الخلفية',
-    nameEn: 'Background Replace',
-    icon: '🌆',
-    description: 'تغيير خلفيات الصور بطريقة احترافية',
-    category: 'background',
-    color: 'from-indigo-500 to-purple-500'
-  },
-  {
-    id: 'object-recolor',
-    nameAr: 'إعادة تلوين الكائنات',
-    nameEn: 'Object Recolor',
-    icon: '🎭',
-    description: 'تغيير ألوان الكائنات في الصور',
-    category: 'color',
-    color: 'from-pink-500 to-rose-500'
-  },
-  {
-    id: 'ai-enhance',
-    nameAr: 'التحسين بالذكاء الاصطناعي',
-    nameEn: 'AI Enhance',
-    icon: '⚡',
-    description: 'تحسين جودة ووضوح الصور تلقائياً',
-    category: 'enhance',
-    color: 'from-cyan-500 to-blue-500'
-  },
-  {
-    id: 'vip-magic-morph',
-    nameAr: 'التحويل السحري المتقدم',
-    nameEn: 'VIP Magic Morph',
-    icon: '💎',
-    description: 'تحويلات متقدمة وحصرية للمشتركين VIP',
-    category: 'vip',
-    color: 'from-yellow-400 to-yellow-600'
-  }
-];
+import { AI_SERVICES } from '../data/aiServicesDatabase';
 
 interface EnhancedServiceGridProps {
   onServiceSelect: (serviceId: string) => void;
@@ -88,84 +17,91 @@ export function EnhancedServiceGrid({ onServiceSelect, selectedService }: Enhanc
       <div className="flex flex-col items-center pt-8 pb-12">
         <KnouxLogo size="large" className="mb-6" />
         <p className="text-white/80 text-center max-w-2xl text-lg">
-          منصة الذكاء الاصطناعي المتقدمة لتحويل وتعديل الصور بطرق إبداعية لا محدودة
+          منصة الذكاء الاصطناعي الأكثر تطوراً لتحويل وتحرير الصور بتقنيات متقدمة
         </p>
       </div>
 
       {/* Services Grid */}
-      <div className="container mx-auto px-6 pb-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {services.map((service) => (
-            <div
-              key={service.id}
-              onClick={() => onServiceSelect(service.id)}
-              className={`
-                group cursor-pointer relative overflow-hidden rounded-2xl
-                transition-all duration-300 hover:scale-105 hover:z-10
-                ${selectedService === service.id ? 'ring-2 ring-yellow-400 scale-105' : ''}
-              `}
-            >
-              {/* Card Background */}
-              <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-md border border-white/20" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 px-6">
+        {AI_SERVICES.map((service) => (
+          <Card
+            key={service.id}
+            onClick={() => onServiceSelect(service.id)}
+            className={`
+              group relative cursor-pointer transition-all duration-300 
+              transform hover:scale-105 hover:shadow-2xl
+              ${selectedService === service.id 
+                ? 'ring-2 ring-white/50 shadow-2xl scale-105' 
+                : 'hover:ring-1 hover:ring-white/30'
+              }
+              bg-gradient-to-br ${service.color} 
+              backdrop-blur-md bg-opacity-20 border border-white/10 text-white
+            `}
+          >
+            {/* VIP Badge */}
+            {service.isVIP && (
+              <div className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-pink-500 text-white px-3 py-1 rounded-full text-xs font-bold">
+                VIP +18
+              </div>
+            )}
+            
+            <CardHeader className="text-center pb-2">
+              <div className="text-4xl mb-2">
+                {service.icon}
+              </div>
+              <CardTitle className="text-lg font-bold text-white group-hover:text-opacity-90">
+                {service.nameAr}
+              </CardTitle>
+            </CardHeader>
+            
+            <CardContent className="pt-0">
+              <p className="text-sm text-white/70 group-hover:text-white/90 transition-colors text-center mb-3">
+                {service.descriptionAr}
+              </p>
               
-              {/* Gradient Overlay */}
-              <div className={`absolute inset-0 bg-gradient-to-br ${service.color} opacity-20 group-hover:opacity-30 transition-opacity duration-300`} />
-              
-              {/* Content */}
-              <div className="relative p-6 h-48 flex flex-col justify-between">
-                {/* Icon and Category */}
-                <div className="flex items-center justify-between">
-                  <div className="text-4xl">{service.icon}</div>
-                  {service.category === 'vip' && (
-                    <div className="bg-yellow-500 text-black text-xs font-bold px-2 py-1 rounded-full">
-                      VIP
-                    </div>
-                  )}
-                </div>
-                
-                {/* Service Name */}
-                <div className="text-center">
-                  <h3 className="text-white font-bold text-lg mb-1 group-hover:text-yellow-300 transition-colors">
-                    {service.nameAr}
-                  </h3>
-                  <p className="text-white/70 text-sm font-medium">
-                    {service.nameEn}
-                  </p>
-                </div>
-                
-                {/* Description */}
-                <p className="text-white/60 text-sm text-center leading-relaxed">
-                  {service.description}
-                </p>
-                
-                {/* Hover Effect */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="flex flex-wrap gap-1 justify-center mb-3">
+                <Badge variant="secondary" className="text-xs bg-white/10 text-white/80">
+                  {service.categoryAr}
+                </Badge>
+                <Badge variant="secondary" className="text-xs bg-white/10 text-white/80">
+                  {service.estimatedTime}
+                </Badge>
+                <Badge 
+                  variant="secondary" 
+                  className={`text-xs ${
+                    service.difficulty === 'easy' ? 'bg-green-500/20 text-green-300' :
+                    service.difficulty === 'medium' ? 'bg-yellow-500/20 text-yellow-300' :
+                    'bg-red-500/20 text-red-300'
+                  }`}
+                >
+                  {service.difficulty === 'easy' ? 'سهل' : 
+                   service.difficulty === 'medium' ? 'متوسط' : 'صعب'}
+                </Badge>
               </div>
               
-              {/* Selection Indicator */}
-              {selectedService === service.id && (
-                <div className="absolute top-3 right-3 w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center">
-                  <div className="w-3 h-3 bg-black rounded-full" />
-                </div>
-              )}
-              
-              {/* Sparkle Effect on Hover */}
-              <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-yellow-300">
-                  <path d="M12 0L14.59 8.41L23 11L14.59 13.59L12 22L9.41 13.59L1 11L9.41 8.41L12 0Z" fill="currentColor"/>
-                </svg>
-              </div>
-            </div>
-          ))}
-        </div>
-        
-        {/* Additional Info */}
-        <div className="mt-12 text-center">
-          <div className="inline-flex items-center justify-center px-6 py-3 bg-white/10 backdrop-blur-md rounded-full border border-white/20">
-            <span className="text-white/80 text-sm">
-              ⚡ جميع الخدمات متاحة مجاناً • 💎 خدمات VIP للمشتركين المميزين
-            </span>
-          </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20"
+              >
+                اختر هذه الخدمة
+              </Button>
+            </CardContent>
+            
+            {/* Hover Effect */}
+            <div className="absolute inset-0 rounded-lg bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          </Card>
+        ))}
+      </div>
+
+      {/* Statistics */}
+      <div className="mt-12 text-center">
+        <div className="inline-flex items-center justify-center px-6 py-3 bg-white/10 backdrop-blur-md rounded-full border border-white/20">
+          <span className="text-white/80 text-sm">
+            ⚡ {AI_SERVICES.filter(s => !s.isVIP).length} خدمة مجانية • 
+            💎 {AI_SERVICES.filter(s => s.isVIP).length} خدمة VIP • 
+            🎯 جميع الخدمات بدون قيود
+          </span>
         </div>
       </div>
     </div>

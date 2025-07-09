@@ -1,497 +1,579 @@
 import React, { useState, useRef } from 'react';
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AdvancedImageCanvas } from "./AdvancedImageCanvas";
-import { ArtisticTemplate } from "@/data/artisticTemplates";
-import { useLanguage } from "@/hooks/useLanguage";
-import { Upload, Cpu, Image, Download, Share2, ArrowLeft, Settings } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Slider } from '@/components/ui/slider';
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  Upload, 
+  Download, 
+  Play, 
+  Pause, 
+  RotateCcw, 
+  Eye, 
+  Settings,
+  Sparkles,
+  Heart,
+  Star,
+  ArrowLeft,
+  Camera,
+  Palette,
+  Zap
+} from 'lucide-react';
+import { ArtisticTemplate } from '../data/artisticTemplates';
 
 interface TemplateProcessorProps {
   selectedTemplate: ArtisticTemplate;
   onBack: () => void;
-  userImage?: string;
+  userImage?: string | null;
 }
 
 interface ProcessingStage {
-  id: string;
-  name_ar: string;
-  name_en: string;
-  progress: number;
-  status: 'pending' | 'processing' | 'completed' | 'error';
+  id: number;
+  name: string;
+  nameAr: string;
   estimatedTime: number;
+  status: 'pending' | 'processing' | 'completed' | 'error';
+  progress: number;
+}
+
+interface CustomizationSettings {
+  faceBlend: number;
+  bodyAlignment: number;
+  clothingColor: string;
+  lightingIntensity: number;
+  styleStrength: number;
+  qualityLevel: 'standard' | 'high' | 'ultra';
 }
 
 export function TemplateProcessor({ selectedTemplate, onBack, userImage }: TemplateProcessorProps) {
-  const { t, currentLanguage } = useLanguage();
-  const [uploadedImage, setUploadedImage] = useState<string | null>(userImage || null);
-  const [selectionData, setSelectionData] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [processingStages, setProcessingStages] = useState<ProcessingStage[]>([]);
+  const [uploadedImage, setUploadedImage] = useState<string | null>(userImage || null);
   const [resultImage, setResultImage] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState('upload');
+  const [processingStages, setProcessingStages] = useState<ProcessingStage[]>([]);
+  const [currentStage, setCurrentStage] = useState(0);
+  const [overallProgress, setOverallProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const [customizations, setCustomizations] = useState<CustomizationSettings>({
+    faceBlend: 80,
+    bodyAlignment: 70,
+    clothingColor: '#FF69B4',
+    lightingIntensity: 60,
+    styleStrength: 85,
+    qualityLevel: 'ultra'
+  });
 
-  const initializeProcessingStages = (): ProcessingStage[] => [
-    {
-      id: 'face_analysis',
-      name_ar: 'تحليل الوجه والملامح',
-      name_en: 'Face Analysis & Features',
-      progress: 0,
-      status: 'pending',
-      estimatedTime: 3
-    },
-    {
-      id: 'pose_detection',
-      name_ar: 'كشف الوضعية والهيكل',
-      name_en: 'Pose Detection & Structure',
-      progress: 0,
-      status: 'pending',
-      estimatedTime: 5
-    },
-    {
-      id: 'style_transfer',
-      name_ar: 'نقل النمط الفني',
-      name_en: 'Artistic Style Transfer',
-      progress: 0,
-      status: 'pending',
-      estimatedTime: 8
-    },
-    {
-      id: 'clothing_integration',
-      name_ar: 'دمج الملابس والتفاصيل',
-      name_en: 'Clothing & Details Integration',
-      progress: 0,
-      status: 'pending',
-      estimatedTime: 6
-    },
-    {
-      id: 'lighting_effects',
-      name_ar: 'تطبيق تأثيرات الإضاءة',
-      name_en: 'Lighting Effects Application',
-      progress: 0,
-      status: 'pending',
-      estimatedTime: 4
-    },
-    {
-      id: 'final_enhancement',
-      name_ar: 'التحسين النهائي والجودة',
-      name_en: 'Final Enhancement & Quality',
-      progress: 0,
-      status: 'pending',
-      estimatedTime: 7
-    }
-  ];
-
-  const handleImageUpload = (imageUrl: string) => {
-    setUploadedImage(imageUrl);
-    setResultImage(null);
-    setActiveTab('preview');
-  };
-
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = (e) => {
-        const imageUrl = e.target?.result as string;
-        handleImageUpload(imageUrl);
+        setUploadedImage(e.target?.result as string);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const startProcessing = async () => {
+  const handleProcessTemplate = async () => {
     if (!uploadedImage) {
-      alert('يرجى تحميل صورة أولاً');
+      alert('يرجى رفع صورة أولاً');
       return;
     }
 
     setIsProcessing(true);
-    setActiveTab('processing');
-    const stages = initializeProcessingStages();
-    setProcessingStages(stages);
-
+    setResultImage(null);
+    setOverallProgress(0);
+    
     try {
-      for (let i = 0; i < stages.length; i++) {
-        const stage = stages[i];
-        
-        // Update stage status to processing
-        setProcessingStages(prev => prev.map(s => 
-          s.id === stage.id ? { ...s, status: 'processing' } : s
-        ));
+      // Initialize stages
+      const stages: ProcessingStage[] = [
+        {
+          id: 1,
+          name: 'Face Analysis & Extraction',
+          nameAr: 'تحليل واستخراج الوجه',
+          estimatedTime: 8000,
+          status: 'pending',
+          progress: 0
+        },
+        {
+          id: 2,
+          name: 'Pose Detection & Alignment',
+          nameAr: 'كشف ومحاذاة الوضعية',
+          estimatedTime: 12000,
+          status: 'pending',
+          progress: 0
+        },
+        {
+          id: 3,
+          name: 'Style Transfer Application',
+          nameAr: 'تطبيق النمط الفني',
+          estimatedTime: 15000,
+          status: 'pending',
+          progress: 0
+        },
+        {
+          id: 4,
+          name: 'Clothing & Details Integration',
+          nameAr: 'دمج الملابس والتفاصيل',
+          estimatedTime: 18000,
+          status: 'pending',
+          progress: 0
+        },
+        {
+          id: 5,
+          name: 'Lighting Effects Processing',
+          nameAr: 'معالجة تأثيرات الإضاءة',
+          estimatedTime: 10000,
+          status: 'pending',
+          progress: 0
+        },
+        {
+          id: 6,
+          name: 'Final Enhancement & Upscaling',
+          nameAr: 'التحسين النهائي والترقية',
+          estimatedTime: 12000,
+          status: 'pending',
+          progress: 0
+        }
+      ];
+      
+      setProcessingStages(stages);
 
-        // Simulate AI processing with realistic progress
-        for (let progress = 0; progress <= 100; progress += 10) {
-          await new Promise(resolve => setTimeout(resolve, stage.estimatedTime * 10));
-          setProcessingStages(prev => prev.map(s => 
-            s.id === stage.id ? { ...s, progress } : s
-          ));
+      // Create FormData for file upload
+      const formData = new FormData();
+      
+      // Convert base64 to blob for upload
+      const response = await fetch(uploadedImage);
+      const blob = await response.blob();
+      formData.append('image', blob, 'user-image.jpg');
+      formData.append('templateId', selectedTemplate.id);
+      formData.append('customizations', JSON.stringify(customizations));
+
+      // Process each stage with simulated progress
+      for (let stageIndex = 0; stageIndex < stages.length; stageIndex++) {
+        setCurrentStage(stageIndex);
+        const stage = stages[stageIndex];
+        stage.status = 'processing';
+        setProcessingStages([...stages]);
+
+        // Simulate stage processing
+        const stepTime = stage.estimatedTime / 20;
+        for (let progress = 0; progress <= 100; progress += 5) {
+          stage.progress = progress;
+          setProcessingStages([...stages]);
+          setOverallProgress(((stageIndex * 100 + progress) / stages.length));
+          await new Promise(resolve => setTimeout(resolve, stepTime));
         }
 
-        // Mark stage as completed
-        setProcessingStages(prev => prev.map(s => 
-          s.id === stage.id ? { ...s, status: 'completed', progress: 100 } : s
-        ));
-
-        await new Promise(resolve => setTimeout(resolve, 500));
+        stage.status = 'completed';
+        setProcessingStages([...stages]);
       }
 
-      // Simulate final result
-      await processWithAI();
-      setActiveTab('result');
+      // Send to backend for final processing
+      const apiResponse = await fetch('/api/process-template', {
+        method: 'POST',
+        body: formData
+      });
+
+      const result = await apiResponse.json();
+      
+      if (result.success) {
+        setResultImage(result.resultImageUrl);
+        console.log('✅ تم إنجاز معالجة التمبلت بنجاح');
+      } else {
+        throw new Error(result.error || 'Template processing failed');
+      }
 
     } catch (error) {
-      console.error('Processing error:', error);
-      setProcessingStages(prev => prev.map(s => 
-        s.status === 'processing' ? { ...s, status: 'error' } : s
-      ));
+      console.error('❌ خطأ في معالجة التمبلت:', error);
+      alert('حدث خطأ في معالجة التمبلت. يرجى المحاولة مرة أخرى.');
     } finally {
       setIsProcessing(false);
+      setOverallProgress(100);
     }
   };
 
-  const processWithAI = async () => {
-    const response = await fetch('/api/ai/template-process', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        templateId: selectedTemplate.id,
-        userImage: uploadedImage,
-        selectionData,
-        settings: {
-          faceSwap: selectedTemplate.customizable.face_swap,
-          bodyAdjustment: selectedTemplate.customizable.body_adjustment,
-          clothingColor: selectedTemplate.customizable.clothing_color,
-          lightingControl: selectedTemplate.customizable.lighting_control
-        }
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error('فشل في معالجة التمبلت');
-    }
-
-    const result = await response.json();
-    setResultImage(result.processedImage);
+  const resetProcessor = () => {
+    setUploadedImage(null);
+    setResultImage(null);
+    setProcessingStages([]);
+    setCurrentStage(0);
+    setOverallProgress(0);
+    setIsProcessing(false);
   };
-
-  const downloadResult = () => {
-    if (!resultImage) return;
-    
-    const link = document.createElement('a');
-    link.href = resultImage;
-    link.download = `knoux-elysian-${selectedTemplate.id}-${Date.now()}.png`;
-    link.click();
-  };
-
-  const shareResult = async () => {
-    if (!resultImage) return;
-    
-    try {
-      const blob = await fetch(resultImage).then(r => r.blob());
-      const file = new File([blob], 'knoux-elysian-art.png', { type: 'image/png' });
-      
-      if (navigator.share) {
-        await navigator.share({
-          title: 'My Elysian Canvas Creation',
-          text: 'Check out my artistic creation from KNOUX VERSA',
-          files: [file]
-        });
-      } else {
-        // Fallback: copy to clipboard
-        await navigator.clipboard.write([
-          new ClipboardItem({ 'image/png': blob })
-        ]);
-        alert('تم نسخ الصورة للحافظة');
-      }
-    } catch (error) {
-      console.error('Sharing failed:', error);
-      alert('فشل في مشاركة الصورة');
-    }
-  };
-
-  const ProcessingStageCard = ({ stage }: { stage: ProcessingStage }) => (
-    <Card className="p-4 bg-white/5 backdrop-blur-sm border-white/10">
-      <div className="flex items-center justify-between mb-2">
-        <h4 className="text-white font-medium text-sm">
-          {currentLanguage === 'ar' ? stage.name_ar : stage.name_en}
-        </h4>
-        <Badge 
-          variant={stage.status === 'completed' ? 'default' : 'secondary'}
-          className={`text-xs ${
-            stage.status === 'completed' ? 'bg-green-500/20 text-green-400' :
-            stage.status === 'processing' ? 'bg-blue-500/20 text-blue-400' :
-            stage.status === 'error' ? 'bg-red-500/20 text-red-400' :
-            'bg-gray-500/20 text-gray-400'
-          }`}
-        >
-          {stage.status === 'completed' ? '✓' :
-           stage.status === 'processing' ? '⟳' :
-           stage.status === 'error' ? '✗' : '○'}
-        </Badge>
-      </div>
-      
-      <Progress 
-        value={stage.progress} 
-        className="h-2 mb-2"
-      />
-      
-      <div className="flex justify-between text-xs text-white/60">
-        <span>{stage.progress}%</span>
-        <span>{stage.estimatedTime}s</span>
-      </div>
-    </Card>
-  );
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Button
+    <div className="min-h-screen bg-transparent p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <Button 
             onClick={onBack}
-            variant="outline"
-            className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+            variant="ghost" 
+            className="text-white hover:bg-white/10"
           >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            العودة
+            <ArrowLeft className="w-5 h-5 ml-2" />
+            العودة للتمبلتس
           </Button>
-          <div>
-            <h1 className="text-2xl font-bold text-white">
-              {currentLanguage === 'ar' ? selectedTemplate.name_ar : selectedTemplate.name_en}
+          
+          <div className="text-center">
+            <h1 className="text-3xl font-bold text-white mb-2">
+              معالج التمبلت الفني
             </h1>
-            <div className="flex items-center space-x-2">
-              <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
-                {selectedTemplate.category}
-              </Badge>
-              <Badge variant="outline" className="text-white border-white/20">
-                {selectedTemplate.artisticLevel}
-              </Badge>
-            </div>
+            <p className="text-purple-200">
+              {selectedTemplate.nameAr} - {selectedTemplate.category}
+            </p>
           </div>
-        </div>
-        
-        <div className="flex space-x-2">
+          
           <Button
+            onClick={resetProcessor}
             variant="outline"
-            className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+            className="border-white/20 text-white hover:bg-white/10"
           >
-            <Settings className="w-4 h-4 mr-2" />
-            إعدادات
+            <RotateCcw className="w-5 h-5 ml-2" />
+            إعادة تعيين
           </Button>
         </div>
-      </div>
 
-      {/* Main Content */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="bg-black/20 backdrop-blur-sm border border-white/20 p-1 rounded-xl">
-          <TabsTrigger value="upload" className="text-white data-[state=active]:bg-cyan-500/20">
-            📤 تحميل الصورة
-          </TabsTrigger>
-          <TabsTrigger value="preview" className="text-white data-[state=active]:bg-cyan-500/20">
-            👁️ معاينة
-          </TabsTrigger>
-          <TabsTrigger value="processing" className="text-white data-[state=active]:bg-cyan-500/20">
-            ⚙️ المعالجة
-          </TabsTrigger>
-          <TabsTrigger value="result" className="text-white data-[state=active]:bg-cyan-500/20">
-            🎨 النتيجة
-          </TabsTrigger>
-        </TabsList>
-
-        {/* Upload Tab */}
-        <TabsContent value="upload" className="mt-6">
-          <div className="grid lg:grid-cols-2 gap-8">
-            {/* Upload Area */}
-            <Card className="p-8 bg-white/5 backdrop-blur-sm border-white/10 border-dashed">
-              <div className="text-center space-y-4">
-                <Upload className="w-16 h-16 mx-auto text-white/40" />
-                <h3 className="text-xl font-bold text-white">تحميل صورتك الشخصية</h3>
-                <p className="text-white/70">
-                  قم بتحميل صورة واضحة لوجهك لدمجها مع التمبلت الفني
+        {/* Template Info Card */}
+        <Card className="bg-black/40 border-purple-500/20 mb-8">
+          <CardHeader>
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <img 
+                  src={selectedTemplate.previewImage} 
+                  alt={selectedTemplate.nameAr}
+                  className="w-24 h-32 object-cover rounded-lg"
+                />
+                <Badge 
+                  variant="secondary" 
+                  className="absolute -top-2 -right-2 bg-red-500/20 text-red-300"
+                >
+                  +18
+                </Badge>
+              </div>
+              
+              <div className="flex-1">
+                <CardTitle className="text-2xl text-white mb-2">
+                  {selectedTemplate.nameAr}
+                </CardTitle>
+                <p className="text-purple-200 mb-3">
+                  {selectedTemplate.description}
                 </p>
                 
-                <div className="space-y-4">
-                  <Button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="w-full bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600"
-                  >
-                    <Upload className="w-4 h-4 mr-2" />
-                    اختيار صورة من الجهاز
-                  </Button>
-                  
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileSelect}
-                    className="hidden"
-                  />
-                  
-                  <div className="text-xs text-white/50">
-                    الصيغ المدعومة: JPEG, PNG, WebP | الحد الأقصى: 10MB
-                  </div>
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="secondary" className="bg-purple-500/20 text-purple-300">
+                    {selectedTemplate.category}
+                  </Badge>
+                  <Badge variant="secondary" className="bg-blue-500/20 text-blue-300">
+                    {selectedTemplate.difficulty}
+                  </Badge>
+                  <Badge variant="secondary" className="bg-green-500/20 text-green-300">
+                    زمن المعالجة: ~75 ثانية
+                  </Badge>
                 </div>
               </div>
-            </Card>
+            </div>
+          </CardHeader>
+        </Card>
 
-            {/* Template Preview */}
-            <Card className="p-6 bg-white/5 backdrop-blur-sm border-white/10">
-              <h3 className="text-white font-semibold mb-4">معاينة التمبلت</h3>
-              <div className="aspect-[3/4] bg-gradient-to-br from-purple-900/20 to-pink-900/20 rounded-lg overflow-hidden relative">
-                <div className="w-full h-full flex items-center justify-center text-white/60">
-                  <Image className="w-16 h-16" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Image Upload & Preview */}
+          <div className="lg:col-span-1">
+            <Card className="bg-black/40 border-white/20">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Camera className="w-5 h-5" />
+                  رفع الصورة
+                </CardTitle>
+              </CardHeader>
+              
+              <CardContent className="space-y-4">
+                <div 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="border-2 border-dashed border-purple-500/50 rounded-lg p-8 text-center cursor-pointer hover:border-purple-400 transition-colors"
+                >
+                  {uploadedImage ? (
+                    <img 
+                      src={uploadedImage} 
+                      alt="Uploaded"
+                      className="w-full h-48 object-cover rounded-lg"
+                    />
+                  ) : (
+                    <div className="space-y-3">
+                      <Upload className="w-12 h-12 text-purple-400 mx-auto" />
+                      <p className="text-purple-200">
+                        اضغط لرفع صورتك
+                      </p>
+                      <p className="text-sm text-gray-400">
+                        JPEG, PNG, WebP - حتى 10MB
+                      </p>
+                    </div>
+                  )}
                 </div>
                 
-                <div className="absolute bottom-4 left-4 right-4">
-                  <div className="bg-black/80 rounded-lg p-3 space-y-2">
-                    <div className="text-white font-medium text-sm">تفاصيل التمبلت</div>
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div>
-                        <span className="text-white/70">النمط: </span>
-                        <span className="text-white">{selectedTemplate.style}</span>
-                      </div>
-                      <div>
-                        <span className="text-white/70">المزاج: </span>
-                        <span className="text-white">{selectedTemplate.mood}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          </div>
-        </TabsContent>
-
-        {/* Preview Tab */}
-        <TabsContent value="preview" className="mt-6">
-          <div className="grid lg:grid-cols-2 gap-8">
-            <div className="space-y-6">
-              <Card className="p-6 bg-white/5 backdrop-blur-sm border-white/10">
-                <h3 className="text-white font-semibold mb-4">صورتك المحملة</h3>
-                <AdvancedImageCanvas
-                  onImageUpload={handleImageUpload}
-                  onSelectionChange={setSelectionData}
-                  uploadedImage={uploadedImage}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                  className="hidden"
                 />
-              </Card>
-            </div>
+                
+                {uploadedImage && (
+                  <Button
+                    onClick={() => setUploadedImage(null)}
+                    variant="outline"
+                    className="w-full border-white/20 text-white hover:bg-white/10"
+                  >
+                    إزالة الصورة
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          </div>
 
-            <div className="space-y-6">
-              <Card className="p-6 bg-white/5 backdrop-blur-sm border-white/10">
-                <h3 className="text-white font-semibold mb-4">إعدادات المعالجة</h3>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <span className="text-white/70">نموذج الوجه: </span>
-                      <span className="text-cyan-400">{selectedTemplate.aiModels.face_model}</span>
-                    </div>
-                    <div>
-                      <span className="text-white/70">نموذج الوضعية: </span>
-                      <span className="text-cyan-400">{selectedTemplate.aiModels.pose_model}</span>
-                    </div>
-                    <div>
-                      <span className="text-white/70">التحسين: </span>
-                      <span className="text-cyan-400">{selectedTemplate.aiModels.enhancement_model}</span>
-                    </div>
-                    <div>
-                      <span className="text-white/70">النمط: </span>
-                      <span className="text-cyan-400">{selectedTemplate.aiModels.style_model}</span>
-                    </div>
+          {/* Customization Controls */}
+          <div className="lg:col-span-1">
+            <Card className="bg-black/40 border-white/20">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Settings className="w-5 h-5" />
+                  إعدادات التخصيص
+                </CardTitle>
+              </CardHeader>
+              
+              <CardContent className="space-y-6">
+                {/* Face Blend */}
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <Label className="text-white">قوة دمج الوجه</Label>
+                    <span className="text-purple-300">{customizations.faceBlend}%</span>
+                  </div>
+                  <Slider
+                    value={[customizations.faceBlend]}
+                    onValueChange={(value) => setCustomizations(prev => ({ ...prev, faceBlend: value[0] }))}
+                    max={100}
+                    step={1}
+                    className="w-full"
+                  />
+                </div>
+
+                {/* Body Alignment */}
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <Label className="text-white">محاذاة الجسم</Label>
+                    <span className="text-purple-300">{customizations.bodyAlignment}%</span>
+                  </div>
+                  <Slider
+                    value={[customizations.bodyAlignment]}
+                    onValueChange={(value) => setCustomizations(prev => ({ ...prev, bodyAlignment: value[0] }))}
+                    max={100}
+                    step={1}
+                    className="w-full"
+                  />
+                </div>
+
+                {/* Clothing Color */}
+                <div className="space-y-2">
+                  <Label className="text-white">لون الملابس</Label>
+                  <Input
+                    type="color"
+                    value={customizations.clothingColor}
+                    onChange={(e) => setCustomizations(prev => ({ ...prev, clothingColor: e.target.value }))}
+                    className="w-full h-12 bg-black/20 border-white/20"
+                  />
+                </div>
+
+                {/* Lighting Intensity */}
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <Label className="text-white">قوة الإضاءة</Label>
+                    <span className="text-purple-300">{customizations.lightingIntensity}%</span>
+                  </div>
+                  <Slider
+                    value={[customizations.lightingIntensity]}
+                    onValueChange={(value) => setCustomizations(prev => ({ ...prev, lightingIntensity: value[0] }))}
+                    max={100}
+                    step={1}
+                    className="w-full"
+                  />
+                </div>
+
+                {/* Style Strength */}
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <Label className="text-white">قوة الأسلوب</Label>
+                    <span className="text-purple-300">{customizations.styleStrength}%</span>
+                  </div>
+                  <Slider
+                    value={[customizations.styleStrength]}
+                    onValueChange={(value) => setCustomizations(prev => ({ ...prev, styleStrength: value[0] }))}
+                    max={100}
+                    step={1}
+                    className="w-full"
+                  />
+                </div>
+
+                {/* Quality Level */}
+                <div className="space-y-2">
+                  <Label className="text-white">مستوى الجودة</Label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {['standard', 'high', 'ultra'].map((quality) => (
+                      <Button
+                        key={quality}
+                        onClick={() => setCustomizations(prev => ({ ...prev, qualityLevel: quality as any }))}
+                        variant={customizations.qualityLevel === quality ? "default" : "outline"}
+                        size="sm"
+                        className={`
+                          ${customizations.qualityLevel === quality 
+                            ? 'bg-purple-500 text-white' 
+                            : 'border-white/20 text-white hover:bg-white/10'
+                          }
+                        `}
+                      >
+                        {quality === 'standard' ? 'عادي' : quality === 'high' ? 'عالي' : 'فائق'}
+                      </Button>
+                    ))}
                   </div>
                 </div>
-              </Card>
 
-              <Button
-                onClick={startProcessing}
-                disabled={!uploadedImage || isProcessing}
-                className="w-full bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 text-white text-lg py-6"
-              >
-                <Cpu className="w-5 h-5 mr-2" />
-                بدء المعالجة بالذكاء الاصطناعي
-              </Button>
-            </div>
-          </div>
-        </TabsContent>
-
-        {/* Processing Tab */}
-        <TabsContent value="processing" className="mt-6">
-          <Card className="p-8 bg-white/5 backdrop-blur-sm border-white/10">
-            <div className="text-center mb-8">
-              <div className="w-16 h-16 mx-auto mb-4 relative">
-                <div className="absolute inset-0 border-4 border-cyan-500/20 rounded-full"></div>
-                <div className="absolute inset-0 border-4 border-cyan-500 rounded-full border-t-transparent animate-spin"></div>
-                <Cpu className="w-8 h-8 text-cyan-400 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
-              </div>
-              <h2 className="text-2xl font-bold text-white mb-2">جاري المعالجة بالذكاء الاصطناعي</h2>
-              <p className="text-white/70">يتم دمج صورتك مع التمبلت الفني باستخدام نماذج AI متقدمة</p>
-            </div>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {processingStages.map((stage) => (
-                <ProcessingStageCard key={stage.id} stage={stage} />
-              ))}
-            </div>
-          </Card>
-        </TabsContent>
-
-        {/* Result Tab */}
-        <TabsContent value="result" className="mt-6">
-          <div className="grid lg:grid-cols-2 gap-8">
-            {/* Original Image */}
-            <Card className="p-6 bg-white/5 backdrop-blur-sm border-white/10">
-              <h3 className="text-white font-semibold mb-4">الصورة الأصلية</h3>
-              <div className="aspect-square bg-black/20 rounded-lg overflow-hidden">
-                {uploadedImage && (
-                  <img 
-                    src={uploadedImage} 
-                    alt="Original" 
-                    className="w-full h-full object-cover"
-                  />
-                )}
-              </div>
+                {/* Process Button */}
+                <Button
+                  onClick={handleProcessTemplate}
+                  disabled={!uploadedImage || isProcessing}
+                  className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-3"
+                >
+                  {isProcessing ? (
+                    <div className="flex items-center gap-2">
+                      <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full" />
+                      جاري المعالجة...
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-5 h-5" />
+                      بدء المعالجة
+                    </div>
+                  )}
+                </Button>
+              </CardContent>
             </Card>
+          </div>
 
-            {/* Result Image */}
-            <Card className="p-6 bg-white/5 backdrop-blur-sm border-white/10">
-              <h3 className="text-white font-semibold mb-4">النتيجة الفنية</h3>
-              <div className="aspect-square bg-black/20 rounded-lg overflow-hidden">
+          {/* Results & Progress */}
+          <div className="lg:col-span-1">
+            <Card className="bg-black/40 border-white/20">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Eye className="w-5 h-5" />
+                  النتائج والتقدم
+                </CardTitle>
+              </CardHeader>
+              
+              <CardContent className="space-y-4">
+                {/* Overall Progress */}
+                {isProcessing && (
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-white">التقدم الإجمالي</span>
+                      <span className="text-purple-300">{Math.round(overallProgress)}%</span>
+                    </div>
+                    <Progress value={overallProgress} className="h-3" />
+                  </div>
+                )}
+
+                {/* Processing Stages */}
+                {processingStages.length > 0 && (
+                  <div className="space-y-3">
+                    <h4 className="text-white font-medium">مراحل المعالجة:</h4>
+                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                      {processingStages.map((stage, index) => (
+                        <div 
+                          key={stage.id}
+                          className={`p-3 rounded-lg border ${
+                            stage.status === 'completed' ? 'bg-green-500/10 border-green-500/30' :
+                            stage.status === 'processing' ? 'bg-blue-500/10 border-blue-500/30' :
+                            stage.status === 'error' ? 'bg-red-500/10 border-red-500/30' :
+                            'bg-gray-500/10 border-gray-500/30'
+                          }`}
+                        >
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-white text-sm font-medium">
+                              {stage.nameAr}
+                            </span>
+                            <span className={`text-xs ${
+                              stage.status === 'completed' ? 'text-green-300' :
+                              stage.status === 'processing' ? 'text-blue-300' :
+                              stage.status === 'error' ? 'text-red-300' :
+                              'text-gray-300'
+                            }`}>
+                              {stage.status === 'completed' ? '✅ مكتمل' :
+                               stage.status === 'processing' ? '⚙️ جاري...' :
+                               stage.status === 'error' ? '❌ خطأ' :
+                               '⏸️ في الانتظار'}
+                            </span>
+                          </div>
+                          {stage.status === 'processing' && (
+                            <Progress value={stage.progress} className="h-1" />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Result Image */}
                 {resultImage && (
-                  <img 
-                    src={resultImage} 
-                    alt="Result" 
-                    className="w-full h-full object-cover"
-                  />
+                  <div className="space-y-3">
+                    <h4 className="text-white font-medium">النتيجة النهائية:</h4>
+                    <div className="relative">
+                      <img 
+                        src={resultImage} 
+                        alt="Result"
+                        className="w-full h-64 object-cover rounded-lg"
+                      />
+                      <div className="absolute top-2 right-2">
+                        <Badge className="bg-green-500/20 text-green-300">
+                          ✅ مكتمل
+                        </Badge>
+                      </div>
+                    </div>
+                    
+                    <Button
+                      onClick={() => {
+                        const link = document.createElement('a');
+                        link.href = resultImage;
+                        link.download = `template_result_${selectedTemplate.id}.png`;
+                        link.click();
+                      }}
+                      variant="outline"
+                      className="w-full border-white/20 text-white hover:bg-white/10"
+                    >
+                      <Download className="w-5 h-5 ml-2" />
+                      تحميل النتيجة
+                    </Button>
+                  </div>
                 )}
-              </div>
+
+                {/* Template Info */}
+                <div className="p-3 bg-purple-500/10 border border-purple-500/20 rounded-lg">
+                  <h4 className="text-purple-300 font-medium mb-2">معلومات التمبلت:</h4>
+                  <div className="space-y-1 text-sm text-gray-300">
+                    <p>• الدقة: {selectedTemplate.resolution}</p>
+                    <p>• النماذج المستخدمة: 6 نماذج متقدمة</p>
+                    <p>• الجودة: {customizations.qualityLevel === 'ultra' ? 'فائقة الجودة' : customizations.qualityLevel === 'high' ? 'عالية' : 'عادية'}</p>
+                    <p>• الحجم المتوقع: ~8-12 MB</p>
+                  </div>
+                </div>
+              </CardContent>
             </Card>
           </div>
-
-          {/* Action Buttons */}
-          <div className="flex justify-center space-x-4 mt-8">
-            <Button
-              onClick={downloadResult}
-              disabled={!resultImage}
-              className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              تحميل النتيجة
-            </Button>
-            <Button
-              onClick={shareResult}
-              disabled={!resultImage}
-              variant="outline"
-              className="bg-white/10 border-white/20 text-white hover:bg-white/20"
-            >
-              <Share2 className="w-4 h-4 mr-2" />
-              مشاركة
-            </Button>
-          </div>
-        </TabsContent>
-      </Tabs>
+        </div>
+      </div>
     </div>
   );
 }
