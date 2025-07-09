@@ -8,6 +8,7 @@ import { storage } from "./storage";
 import { insertTransformationSchema, insertVipSessionSchema } from "@shared/schema";
 import { processImageTransformation } from "./ai/imageProcessor";
 import { localModelsManager } from "./ai/localModels";
+import { processTemplateRequest, getTemplatePreview } from "./ai/routes/templateRoutes";
 
 // Configure multer for image uploads
 const upload = multer({
@@ -243,6 +244,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: error.message });
     }
   });
+
+  // Artistic Template Processing Routes
+  app.post('/api/ai/template-process', processTemplateRequest);
+  app.get('/api/templates/:templateId/preview', getTemplatePreview);
 
   // Health check endpoint
   app.get('/api/health', (req, res) => {

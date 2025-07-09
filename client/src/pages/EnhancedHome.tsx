@@ -6,6 +6,9 @@ import { PromptNexus } from '../components/PromptNexus';
 import { ProcessingModal } from '../components/ProcessingModal';
 import { AdvancedLocalAITools } from '../components/AdvancedLocalAITools';
 import { AdvancedAIModelsManager } from '../components/AdvancedAIModelsManager';
+import { ArtisticTemplatesGallery } from '../components/ArtisticTemplatesGallery';
+import { TemplateProcessor } from '../components/TemplateProcessor';
+import { ArtisticTemplate } from '../data/artisticTemplates';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 interface TransformRequest {
@@ -27,6 +30,8 @@ export default function EnhancedHome() {
   const [showResults, setShowResults] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('services');
   const [selectedTool, setSelectedTool] = useState<string>('');
+  const [selectedTemplate, setSelectedTemplate] = useState<ArtisticTemplate | null>(null);
+  const [userHasVIP, setUserHasVIP] = useState<boolean>(false);
 
   const handleServiceSelect = (serviceId: string) => {
     setSelectedService(serviceId);
@@ -109,6 +114,17 @@ export default function EnhancedHome() {
     setSelectionData('');
     setResultImage(null);
     setShowResults(false);
+    setSelectedTemplate(null);
+  };
+
+  const handleTemplateSelect = (template: ArtisticTemplate) => {
+    setSelectedTemplate(template);
+    setActiveTab('template-processor');
+  };
+
+  const handleTemplateBack = () => {
+    setSelectedTemplate(null);
+    setActiveTab('templates');
   };
 
   return (
@@ -139,6 +155,12 @@ export default function EnhancedHome() {
                   >
                     🤖 إدارة النماذج
                   </TabsTrigger>
+                  <TabsTrigger 
+                    value="templates" 
+                    className="text-white data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400 px-6 py-3 rounded-lg transition-all"
+                  >
+                    🎨 التمبلتات الفنية +18 (50+)
+                  </TabsTrigger>
                 </TabsList>
               </div>
 
@@ -158,6 +180,23 @@ export default function EnhancedHome() {
 
               <TabsContent value="models" className="mt-0">
                 <AdvancedAIModelsManager />
+              </TabsContent>
+
+              <TabsContent value="templates" className="mt-0">
+                <ArtisticTemplatesGallery 
+                  onTemplateSelect={handleTemplateSelect}
+                  userHasVIP={userHasVIP}
+                />
+              </TabsContent>
+
+              <TabsContent value="template-processor" className="mt-0">
+                {selectedTemplate && (
+                  <TemplateProcessor
+                    selectedTemplate={selectedTemplate}
+                    onBack={handleTemplateBack}
+                    userImage={uploadedImage}
+                  />
+                )}
               </TabsContent>
             </Tabs>
           </div>
