@@ -10,6 +10,8 @@
     "check": "tsc",
     "db:push": "drizzle-kit push",
     "setup": "node setup.js",
+    "setup-check": "node scripts/setup-check.js",
+    "customize": "echo 'راجع CUSTOMIZATION_GUIDE.md للتخصيص الكامل'",
     "electron": "NODE_ENV=development electron .",
     "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:5000 && electron .\"",
     "electron:compile": "node scripts/build-electron.js",
