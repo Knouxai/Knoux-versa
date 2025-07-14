@@ -11,32 +11,52 @@ import {
   monitorPerformance,
   getCurrentMetrics,
 } from "./ai/middleware/monitoring";
+import {
+  getSecurityConfig,
+  getAIApiConfig,
+  displaySecurityStatus,
+} from "./config/security";
+import {
+  APP_CONFIG,
+  getCurrentEnvironmentConfig,
+  displayAppStatus,
+} from "./config/app-config";
 
 const app = express();
 
-// Security and performance middleware - allow embedding in Builder.io
+// إعداد الأمان والتكوين
+const securityConfig = getSecurityConfig();
+const aiConfig = getAIApiConfig();
+const envConfig = getCurrentEnvironmentConfig();
+
+// Security and performance middleware
 app.use(
   helmet({
-    contentSecurityPolicy: false, // Disable for development
+    contentSecurityPolicy: securityConfig.productionMode ? undefined : false,
     frameguard: false, // Allow embedding in iframes for Builder.io
+    crossOriginEmbedderPolicy: false,
   }),
 );
 app.use(compression());
 app.use(
   cors({
-    origin:
-      process.env.NODE_ENV === "development"
-        ? true
-        : [
-            "https://yourdomain.com",
-            "https://builder.io",
-            "https://*.builder.io",
-            "https://cdn.builder.io",
-            "https://*.builder.my",
-          ],
+    origin: securityConfig.productionMode
+      ? securityConfig.allowedOrigins.concat([
+          "https://builder.io",
+          "https://*.builder.io",
+          "https://cdn.builder.io",
+          "https://*.builder.my",
+        ])
+      : true,
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Requested-With",
+      "X-VIP-Key",
+      "X-VIP-Token",
+    ],
   }),
 );
 
@@ -161,6 +181,10 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // عرض حالة التطبيق والأمان
+  displayAppStatus();
+  displaySecurityStatus();
+
   console.log("🚀 Starting KNOUX VERSA AI Server...");
 
   // Initialize AI Service Manager
