@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, Route } from "wouter";
+import { Router, Route, Switch } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "./components/ui/toaster";
 import { AIServiceProvider } from "./components/providers/AIServiceProvider";
@@ -27,21 +27,23 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AIServiceProvider>
         <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-          <Routes>
-            {/* Main Routes */}
-            <Route path="/" component={EnhancedHome} />
-            <Route path="/home" component={Home} />
-            <Route path="/about" component={About} />
-            <Route path="/builder" component={Builder} />
+          <Router>
+            <Switch>
+              {/* Main Routes */}
+              <Route path="/" component={EnhancedHome} />
+              <Route path="/home" component={Home} />
+              <Route path="/about" component={About} />
+              <Route path="/builder" component={Builder} />
 
-            {/* Elysian Canvas Gallery */}
-            <Route path="/elysian" component={ElysianGallery} />
-            <Route path="/gallery" component={ElysianGallery} />
-            <Route path="/elysian-canvas" component={ElysianGallery} />
+              {/* Elysian Canvas Gallery */}
+              <Route path="/elysian" component={ElysianGallery} />
+              <Route path="/gallery" component={ElysianGallery} />
+              <Route path="/elysian-canvas" component={ElysianGallery} />
 
-            {/* Fallback */}
-            <Route component={NotFound} />
-          </Routes>
+              {/* Fallback */}
+              <Route component={NotFound} />
+            </Switch>
+          </Router>
 
           <Toaster />
         </div>
