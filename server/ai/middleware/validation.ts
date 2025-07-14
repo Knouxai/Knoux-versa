@@ -31,7 +31,7 @@ export function validateImageInput(
   next: NextFunction,
 ) {
   try {
-    // التحقق من وجود ملف أو ملفات
+    // ا��تحقق من وجود ملف أو ملفات
     if (
       !req.file &&
       (!req.files || (Array.isArray(req.files) && req.files.length === 0))
@@ -73,7 +73,7 @@ export function validateImageInput(
       if (req.files.length > 20) {
         return res.status(400).json({
           success: false,
-          error: "الحد الأقصى 20 صورة في الطلب الواحد",
+          error: "الحد ��لأقصى 20 صورة في الطلب الواحد",
           code: "TOO_MANY_FILES",
         });
       }
@@ -314,7 +314,7 @@ function validateSpecificServiceSettings(
       if (s.skinSmoothing && (s.skinSmoothing < 0 || s.skinSmoothing > 100)) {
         return {
           isValid: false,
-          error: "skinSmoothing يجب أن يكون بين 0 و 100",
+          error: "skinSmoothing ��جب أن يكون بين 0 و 100",
         };
       }
       if (s.eyeEnhancement && (s.eyeEnhancement < 0 || s.eyeEnhancement > 50)) {
@@ -442,7 +442,7 @@ export function validateUserRateLimit(
   const currentLimit = isVIP ? limits.vip : limits.standard;
 
   // هنا يمكن تطبيق منطق rate limiting أكثر تعقيداً
-  // مع استخدام Redis أو قاعدة بيانات لتتبع الطلبات
+  // مع استخدام Redis أو قاعدة بيانات لتتبع الط��بات
 
   next();
 }
@@ -496,6 +496,53 @@ declare global {
       imageHash?: string;
       isDuplicate?: boolean;
     }
+  }
+}
+
+// التح��ق من طلبات الذكاء الاصطناعي
+export function validateAIRequest(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const { serviceId, imageData, settings } = req.body;
+
+    // التحقق من معرف الخدمة
+    if (!serviceId) {
+      return res.status(400).json({
+        success: false,
+        error: "معرف الخدمة مطلوب",
+        code: "MISSING_SERVICE_ID",
+      });
+    }
+
+    // التحقق من بيانات الصورة
+    if (!imageData) {
+      return res.status(400).json({
+        success: false,
+        error: "بيانات الصورة مطلوبة",
+        code: "MISSING_IMAGE_DATA",
+      });
+    }
+
+    // التحقق من صيغة base64
+    if (typeof imageData === "string" && !imageData.startsWith("data:image/")) {
+      return res.status(400).json({
+        success: false,
+        error: "صيغة الصورة غير صحيحة",
+        code: "INVALID_IMAGE_FORMAT",
+      });
+    }
+
+    next();
+  } catch (error) {
+    console.error("خطأ في التحقق من طلب AI:", error);
+    res.status(500).json({
+      success: false,
+      error: "خطأ في التحقق من الطلب",
+      code: "VALIDATION_ERROR",
+    });
   }
 }
 

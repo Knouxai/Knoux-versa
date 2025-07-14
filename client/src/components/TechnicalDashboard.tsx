@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PerformanceMonitor } from "@/components/PerformanceMonitor";
 
 interface ModelStatus {
   name: string;
@@ -176,7 +177,7 @@ export function TechnicalDashboard() {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-2xl font-bold neon-text text-cyan-400 mb-2">
-              🧠 KNOUX-VERSA Technical Console
+              ���� KNOUX-VERSA Technical Console
             </h2>
             <p className="text-gray-300 text-sm">
               نظام متقدم لتحرير الصور المعتمد على الذكاء الاصطناعي | Advanced
@@ -249,7 +250,14 @@ export function TechnicalDashboard() {
       </Card>
 
       <Tabs defaultValue="modules" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 glass rounded-2xl p-1">
+        <TabsList className="grid w-full grid-cols-4 glass rounded-2xl p-1">
+          <TabsTrigger
+            value="performance"
+            className="data-[state=active]:bg-green-400/20 data-[state=active]:text-green-400"
+          >
+            <i className="fas fa-chart-line mr-2"></i>
+            مراقب الأداء
+          </TabsTrigger>
           <TabsTrigger
             value="modules"
             className="data-[state=active]:bg-cyan-400/20 data-[state=active]:text-cyan-400"
@@ -272,6 +280,10 @@ export function TechnicalDashboard() {
             System Architecture
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="performance" className="mt-6">
+          <PerformanceMonitor />
+        </TabsContent>
 
         <TabsContent value="modules" className="mt-6">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">

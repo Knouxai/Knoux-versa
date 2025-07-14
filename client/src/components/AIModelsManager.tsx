@@ -36,7 +36,7 @@ export function AIModelsManager() {
   const generateModelsFromTools = (): AIModel[] => {
     const uniqueModels = new Map<AIModelIdentifier, AIModel>();
 
-    AI_TOOLS_DATABASE.forEach(tool => {
+    AI_TOOLS_DATABASE.forEach((tool) => {
       const modelInfo = tool.model_info;
       const modelId = modelInfo.backend_identifier;
 
@@ -48,21 +48,21 @@ export function AIModelsManager() {
           type: getModelType(modelId),
           size: modelInfo.size_gb,
           description: `Neural model used by ${tool.name_ar}`,
-          capabilities: tool.features.map(f => f.description_en),
+          capabilities: tool.features.map((f) => f.description_en),
           status: Math.random() > 0.3 ? "installed" : "available", // Random status for demo
           performance: {
             speed: Math.floor(Math.random() * 30) + 70,
             quality: Math.floor(Math.random() * 20) + 80,
-            memoryUsage: `${modelInfo.size_gb.toFixed(1)}GB`
+            memoryUsage: `${modelInfo.size_gb.toFixed(1)}GB`,
           },
           requirements: {
             gpu: modelInfo.gpu_required,
             minRam: modelInfo.gpu_required ? "8GB" : "4GB",
             minVram: modelInfo.min_vram_gb,
-            diskSpace: `${(modelInfo.size_gb * 1.2).toFixed(1)}GB`
+            diskSpace: `${(modelInfo.size_gb * 1.2).toFixed(1)}GB`,
           },
           usedByTools: [],
-          backend_identifier: modelId
+          backend_identifier: modelId,
         });
       }
 
@@ -74,7 +74,7 @@ export function AIModelsManager() {
     return Array.from(uniqueModels.values());
   };
 
-  const getModelType = (identifier: AIModelIdentifier): AIModel['type'] => {
+  const getModelType = (identifier: AIModelIdentifier): AIModel["type"] => {
     switch (identifier) {
       case AIModelIdentifier.STABLE_DIFFUSION_XL:
       case AIModelIdentifier.STABLE_DIFFUSION_V21:
@@ -99,7 +99,8 @@ export function AIModelsManager() {
     }
   };
 
-  const [models, setModels] = useState<AIModel[]>(generateModelsFromTools());
+  const [models, setModels] = useState<AIModel[]>([
+    ...generateModelsFromTools(),
     {
       id: "rv51",
       name: "RealisticVision v5.1",
@@ -110,7 +111,7 @@ export function AIModelsManager() {
       capabilities: ["Photorealistic", "Portrait", "High-Detail"],
       status: "installed",
       performance: { speed: 92, quality: 96, memoryUsage: "3.8GB" },
-      requirements: { gpu: true, minRam: "6GB", diskSpace: "4GB" }
+      requirements: { gpu: true, minRam: "6GB", diskSpace: "4GB" },
     },
     {
       id: "anything6",
@@ -122,7 +123,7 @@ export function AIModelsManager() {
       capabilities: ["Anime Style", "Illustration", "Character Design"],
       status: "available",
       performance: { speed: 90, quality: 94, memoryUsage: "0GB" },
-      requirements: { gpu: true, minRam: "6GB", diskSpace: "5GB" }
+      requirements: { gpu: true, minRam: "6GB", diskSpace: "5GB" },
     },
     {
       id: "modnet",
@@ -134,7 +135,7 @@ export function AIModelsManager() {
       capabilities: ["Background Removal", "Edge Preservation", "Real-time"],
       status: "installed",
       performance: { speed: 98, quality: 95, memoryUsage: "512MB" },
-      requirements: { gpu: false, minRam: "4GB", diskSpace: "1GB" }
+      requirements: { gpu: false, minRam: "4GB", diskSpace: "1GB" },
     },
     {
       id: "clip-sam",
@@ -143,11 +144,15 @@ export function AIModelsManager() {
       type: "detection",
       size: "1.2 GB",
       description: "الربط بين النص والكيانات البصرية للتحديد الدقيق",
-      capabilities: ["Object Detection", "Semantic Segmentation", "Text-Image Matching"],
+      capabilities: [
+        "Object Detection",
+        "Semantic Segmentation",
+        "Text-Image Matching",
+      ],
       status: "downloading",
       downloadProgress: 67,
       performance: { speed: 85, quality: 92, memoryUsage: "1.2GB" },
-      requirements: { gpu: true, minRam: "6GB", diskSpace: "2GB" }
+      requirements: { gpu: true, minRam: "6GB", diskSpace: "2GB" },
     },
     {
       id: "superres",
@@ -159,7 +164,7 @@ export function AIModelsManager() {
       capabilities: ["4x Upscaling", "Noise Reduction", "Detail Enhancement"],
       status: "available",
       performance: { speed: 88, quality: 96, memoryUsage: "0GB" },
-      requirements: { gpu: true, minRam: "4GB", diskSpace: "512MB" }
+      requirements: { gpu: true, minRam: "4GB", diskSpace: "512MB" },
     },
     {
       id: "prompt-adapter",
@@ -171,7 +176,7 @@ export function AIModelsManager() {
       capabilities: ["Text Analysis", "Mask Generation", "Arabic Support"],
       status: "installed",
       performance: { speed: 94, quality: 88, memoryUsage: "128MB" },
-      requirements: { gpu: false, minRam: "2GB", diskSpace: "256MB" }
+      requirements: { gpu: false, minRam: "2GB", diskSpace: "256MB" },
     },
     {
       id: "controlnet",
@@ -180,50 +185,73 @@ export function AIModelsManager() {
       type: "diffusion",
       size: "2.4 GB",
       description: "تحكم دقيق في التوليد باستخدام خرائط التحكم",
-      capabilities: ["Pose Control", "Edge Control", "Depth Control", "Canny Edge"],
+      capabilities: [
+        "Pose Control",
+        "Edge Control",
+        "Depth Control",
+        "Canny Edge",
+      ],
       status: "available",
       performance: { speed: 80, quality: 97, memoryUsage: "0GB" },
-      requirements: { gpu: true, minRam: "8GB", diskSpace: "3GB" }
-    }
+      requirements: { gpu: true, minRam: "8GB", diskSpace: "3GB" },
+    },
   ]);
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case "diffusion": return "bg-purple-500/20 text-purple-400 border-purple-400/30";
-      case "enhancement": return "bg-green-500/20 text-green-400 border-green-400/30";
-      case "segmentation": return "bg-blue-500/20 text-blue-400 border-blue-400/30";
-      case "nlp": return "bg-orange-500/20 text-orange-400 border-orange-400/30";
-      case "detection": return "bg-cyan-500/20 text-cyan-400 border-cyan-400/30";
-      default: return "bg-gray-500/20 text-gray-400 border-gray-400/30";
+      case "diffusion":
+        return "bg-purple-500/20 text-purple-400 border-purple-400/30";
+      case "enhancement":
+        return "bg-green-500/20 text-green-400 border-green-400/30";
+      case "segmentation":
+        return "bg-blue-500/20 text-blue-400 border-blue-400/30";
+      case "nlp":
+        return "bg-orange-500/20 text-orange-400 border-orange-400/30";
+      case "detection":
+        return "bg-cyan-500/20 text-cyan-400 border-cyan-400/30";
+      default:
+        return "bg-gray-500/20 text-gray-400 border-gray-400/30";
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "installed": return "bg-green-500/20 text-green-400 border-green-400/30";
-      case "downloading": return "bg-yellow-500/20 text-yellow-400 border-yellow-400/30";
-      case "available": return "bg-blue-500/20 text-blue-400 border-blue-400/30";
-      case "error": return "bg-red-500/20 text-red-400 border-red-400/30";
-      default: return "bg-gray-500/20 text-gray-400 border-gray-400/30";
+      case "installed":
+        return "bg-green-500/20 text-green-400 border-green-400/30";
+      case "downloading":
+        return "bg-yellow-500/20 text-yellow-400 border-yellow-400/30";
+      case "available":
+        return "bg-blue-500/20 text-blue-400 border-blue-400/30";
+      case "error":
+        return "bg-red-500/20 text-red-400 border-red-400/30";
+      default:
+        return "bg-gray-500/20 text-gray-400 border-gray-400/30";
     }
   };
 
   const handleDownload = (modelId: string) => {
-    setModels(models.map(model =>
-      model.id === modelId
-        ? { ...model, status: "downloading", downloadProgress: 0 }
-        : model
-    ));
+    setModels(
+      models.map((model) =>
+        model.id === modelId
+          ? { ...model, status: "downloading", downloadProgress: 0 }
+          : model,
+      ),
+    );
 
     // Simulate download progress
     const interval = setInterval(() => {
-      setModels(prevModels => {
-        const updatedModels = prevModels.map(model => {
+      setModels((prevModels) => {
+        const updatedModels = prevModels.map((model) => {
           if (model.id === modelId && model.status === "downloading") {
-            const newProgress = (model.downloadProgress || 0) + Math.random() * 15;
+            const newProgress =
+              (model.downloadProgress || 0) + Math.random() * 15;
             if (newProgress >= 100) {
               clearInterval(interval);
-              return { ...model, status: "installed", downloadProgress: undefined };
+              return {
+                ...model,
+                status: "installed",
+                downloadProgress: undefined,
+              };
             }
             return { ...model, downloadProgress: newProgress };
           }
@@ -235,16 +263,16 @@ export function AIModelsManager() {
   };
 
   const handleUninstall = (modelId: string) => {
-    setModels(models.map(model =>
-      model.id === modelId
-        ? { ...model, status: "available" }
-        : model
-    ));
+    setModels(
+      models.map((model) =>
+        model.id === modelId ? { ...model, status: "available" } : model,
+      ),
+    );
   };
 
-  const installedModels = models.filter(m => m.status === "installed");
-  const availableModels = models.filter(m => m.status === "available");
-  const downloadingModels = models.filter(m => m.status === "downloading");
+  const installedModels = models.filter((m) => m.status === "installed");
+  const availableModels = models.filter((m) => m.status === "available");
+  const downloadingModels = models.filter((m) => m.status === "downloading");
 
   return (
     <div className="space-y-6">
@@ -255,20 +283,27 @@ export function AIModelsManager() {
               🧠 AI Models Manager
             </h2>
             <p className="text-gray-300 text-sm">
-              إدارة وتحميل النماذج التوليدية المتقدمة | Advanced AI Models Management
+              إدارة وتحميل النماذج التوليدية المتقدمة | Advanced AI Models
+              Management
             </p>
           </div>
           <div className="flex gap-4 text-sm">
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-400">{installedModels.length}</div>
+              <div className="text-2xl font-bold text-green-400">
+                {installedModels.length}
+              </div>
               <div className="text-gray-400">Installed</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-400">{availableModels.length}</div>
+              <div className="text-2xl font-bold text-blue-400">
+                {availableModels.length}
+              </div>
               <div className="text-gray-400">Available</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-yellow-400">{downloadingModels.length}</div>
+              <div className="text-2xl font-bold text-yellow-400">
+                {downloadingModels.length}
+              </div>
               <div className="text-gray-400">Downloading</div>
             </div>
           </div>
@@ -279,11 +314,21 @@ export function AIModelsManager() {
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-gray-400">Storage Usage</span>
             <span className="text-sm text-cyan-400">
-              {installedModels.reduce((total, model) => total + parseFloat(model.size), 0).toFixed(1)} GB / 50 GB
+              {installedModels
+                .reduce((total, model) => total + parseFloat(model.size), 0)
+                .toFixed(1)}{" "}
+              GB / 50 GB
             </span>
           </div>
           <Progress
-            value={(installedModels.reduce((total, model) => total + parseFloat(model.size), 0) / 50) * 100}
+            value={
+              (installedModels.reduce(
+                (total, model) => total + parseFloat(model.size),
+                0,
+              ) /
+                50) *
+              100
+            }
             className="h-2"
           />
         </div>
@@ -301,7 +346,9 @@ export function AIModelsManager() {
               <div key={model.id} className="glass p-4 rounded-xl">
                 <div className="flex items-center justify-between mb-2">
                   <span className="font-medium text-white">{model.name}</span>
-                  <span className="text-sm text-gray-400">{model.downloadProgress?.toFixed(1)}%</span>
+                  <span className="text-sm text-gray-400">
+                    {model.downloadProgress?.toFixed(1)}%
+                  </span>
                 </div>
                 <Progress value={model.downloadProgress || 0} className="h-2" />
               </div>
@@ -313,7 +360,10 @@ export function AIModelsManager() {
       {/* Models Grid */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {models.map((model) => (
-          <Card key={model.id} className="glass p-6 hover:bg-white/10 transition-all duration-300 group">
+          <Card
+            key={model.id}
+            className="glass p-6 hover:bg-white/10 transition-all duration-300 group"
+          >
             <div className="flex items-start justify-between mb-4">
               <div className="flex gap-2">
                 <Badge className={getTypeColor(model.type)} size="sm">
@@ -352,13 +402,17 @@ export function AIModelsManager() {
               <div className="space-y-2 mb-4">
                 <div className="flex justify-between text-xs">
                   <span className="text-gray-400">Speed</span>
-                  <span className="text-green-400">{model.performance.speed}%</span>
+                  <span className="text-green-400">
+                    {model.performance.speed}%
+                  </span>
                 </div>
                 <Progress value={model.performance.speed} className="h-1" />
 
                 <div className="flex justify-between text-xs">
                   <span className="text-gray-400">Quality</span>
-                  <span className="text-purple-400">{model.performance.quality}%</span>
+                  <span className="text-purple-400">
+                    {model.performance.quality}%
+                  </span>
                 </div>
                 <Progress value={model.performance.quality} className="h-1" />
               </div>
@@ -367,8 +421,12 @@ export function AIModelsManager() {
             {/* Requirements */}
             <div className="text-xs text-gray-400 mb-4 space-y-1">
               <div className="flex items-center gap-2">
-                <i className={`fas ${model.requirements.gpu ? 'fa-microchip text-green-400' : 'fa-microchip text-gray-500'}`}></i>
-                <span>GPU: {model.requirements.gpu ? 'Required' : 'Optional'}</span>
+                <i
+                  className={`fas ${model.requirements.gpu ? "fa-microchip text-green-400" : "fa-microchip text-gray-500"}`}
+                ></i>
+                <span>
+                  GPU: {model.requirements.gpu ? "Required" : "Optional"}
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <i className="fas fa-memory text-blue-400"></i>
@@ -416,11 +474,7 @@ export function AIModelsManager() {
               )}
 
               {model.status === "downloading" && (
-                <Button
-                  size="sm"
-                  disabled
-                  className="flex-1"
-                >
+                <Button size="sm" disabled className="flex-1">
                   <i className="fas fa-spinner fa-spin mr-2"></i>
                   Downloading...
                 </Button>

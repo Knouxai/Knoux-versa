@@ -89,7 +89,7 @@ export function validateVIPKey(key: string): {
     return { isValid: true, tier: "diamond" };
   }
 
-  // مفاتيح VIP مختلفة المستويات
+  // مفاتيح VIP مختلفة المس��ويات
   const vipKeys: Record<string, keyof typeof VIP_TIERS> = {
     KNOUX_GOLD_2025: "gold",
     KNOUX_PLATINUM_2025: "platinum",
@@ -373,7 +373,7 @@ export function terminateVIPSession(req: AuthenticatedRequest, res: Response) {
   if (!req.vipSession) {
     return res.status(401).json({
       success: false,
-      error: "غير مسموح للوصول",
+      error: "غير م��موح للوصول",
       code: "UNAUTHORIZED",
     });
   }
@@ -431,3 +431,6 @@ export function getVIPStats() {
 
 // تصدير الأنواع والثوابت
 export { VIP_TIERS, type VIPSession, type AuthenticatedRequest };
+
+// تصدير middleware باسم بديل
+export { validateVIPAccess as vipAuthMiddleware };
