@@ -38,7 +38,7 @@ export default function EnhancedHome() {
   const [userHasVIP, setUserHasVIP] = useState<boolean>(false);
 
   // إصلاح: التأكد من أن المعالجة لا تبدأ تلقائياً
-  React.useEffect(() => {
+  useEffect(() => {
     // إعادة تعيين حالة المعالجة عند التحميل الأول
     setIsProcessing(false);
     setProcessingProgress(0);
@@ -342,7 +342,7 @@ export default function EnhancedHome() {
               <h2 className="text-3xl font-bold text-white mb-2">
                 النتيجة النهائية
               </h2>
-              <p className="text-white/70">مقارنة الصورة الأصلية مع النتيجة</p>
+              <p className="text-white/70">مق��رنة الصورة الأصلية مع النتيجة</p>
             </div>
 
             <div className="grid md:grid-cols-2 gap-8 mb-8">
