@@ -11,7 +11,7 @@ import { TechnicalDashboard } from "@/components/TechnicalDashboard";
 import { AdvancedAIModelsManager } from "@/components/AdvancedAIModelsManager";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useImageTransform } from "@/hooks/useImageTransform";
-import { processImageLocally } from "@/lib/localAIProcessor";
+import { aiServiceClient } from "@/lib/aiServiceClient";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -64,104 +64,61 @@ export default function Home() {
       return;
     }
 
-    // قائمة الأدوات المحلية
-    const localTools = [
-      "face_swap",
-      "beauty_filter",
-      "face_expression",
-      "age_transform",
-      "gender_swap",
-      "makeup_artist",
-      "body_reshape",
-      "clothing_swap",
-      "tattoo_artist",
-      "muscle_enhancer",
-      "bg_remover",
-      "bg_replacer",
-      "lighting_master",
-      "style_transfer",
-      "cartoonizer",
-      "colorizer",
-      "super_resolution",
-      "denoiser",
-      "sharpener",
-      "object_remover",
-      "object_replacer",
-      "smart_crop",
-      "image_merger",
-      "pose_editor",
-      "hair_stylist",
-      "eye_color_changer",
-      "teeth_whitener",
-      "scar_remover",
-      "virtual_jewelry",
-      "vintage_filter",
-    ];
+    // استخدام العميل الموحد للمعالجة
+    setIsLocalProcessing(true);
+    setLocalProgress(0);
+    setLocalMessage("تحضير المعالجة...");
 
-    // استخدام المعالجة المحلية للأدوات المحلية
-    if (localTools.includes(selectedService)) {
-      setIsLocalProcessing(true);
-      setLocalProgress(0);
-      setLocalMessage("بدء المعالجة المحلية...");
-
-      try {
-        const result = await processImageLocally(
-          selectedService,
-          uploadedImage,
-          {
+    try {
+      const result = await aiServiceClient.processRequest(
+        {
+          serviceId: selectedService,
+          imageData: uploadedImage,
+          settings: {
             ...serviceCustomizations[selectedService],
-            prompt,
-            quality,
-            selectionData,
           },
-          (progress, message) => {
-            setLocalProgress(progress);
-            setLocalMessage(message);
-          },
+          prompt,
+          quality,
+          isVIP,
+          vipSession,
+          selectionData,
+        },
+        (progress, message) => {
+          setLocalProgress(progress);
+          setLocalMessage(message);
+        },
+      );
+
+      if (result.success && result.processedImage) {
+        // إنشاء كائن transformation للعرض
+        const mockTransformation = {
+          id: Date.now(),
+          transformedImageUrl: result.processedImage,
+          prompt,
+          service: selectedService,
+          quality,
+          isVIP,
+          createdAt: new Date(),
+          processingTime: result.processingTime,
+          metadata: result.metadata,
+        };
+
+        // عرض النتيجة
+        setResult(mockTransformation);
+        setLocalMessage(
+          `تمت المعالجة بنجاح! ${result.metadata?.isLocal ? "💻" : "☁️"}`,
         );
 
-        if (result.success && result.processedImage) {
-          // إنشاء كائن transformation مؤقت للعرض
-          const mockTransformation = {
-            id: Date.now(),
-            transformedImageUrl: result.processedImage,
-            prompt,
-            service: selectedService,
-            quality,
-            isVIP: false,
-            createdAt: new Date(),
-            processingTime: result.processingTime,
-            metadata: result.metadata,
-          };
-
-          // عرض النتيجة
-          setResult(mockTransformation);
-          setLocalMessage("تمت المعالجة بنجاح! ✨");
-
-          setTimeout(() => {
-            setIsLocalProcessing(false);
-          }, 1000);
-        } else {
-          throw new Error(result.error || "فشلت المعالجة المحلية");
-        }
-      } catch (error) {
-        console.error("خطأ في المعالجة المحلية:", error);
-        setError(
-          error instanceof Error ? error.message : "خطأ في المعالجة المحلية",
-        );
-        setIsLocalProcessing(false);
+        setTimeout(() => {
+          setIsLocalProcessing(false);
+        }, 1000);
+      } else {
+        throw new Error(result.error || "فشلت المعالجة");
       }
-    } else {
-      // استخدام المعالجة السحابية للأدوات الأخرى
-      await transform({
-        originalImageUrl: uploadedImage,
-        prompt,
-        service: selectedService,
-        selectionData,
-        quality,
-        isVIP,
-        vipSession,
-      });
+    } catch (error) {
+      console.error("خطأ في المعالجة:", error);
+      setError(error instanceof Error ? error.message : "خطأ في المعالجة");
+      setIsLocalProcessing(false);
     }
   };
 
@@ -281,7 +238,7 @@ export default function Home() {
             </h2>
             <p className="text-responsive-md text-gray-300 max-w-6xl mx-auto mb-6 leading-relaxed">
               {t(
-                "بنية برمجية شاملة موجهة لمعالجة الصور باستخدام تقنيات الذكاء الاصطناعي التوليدي عبر نماذج عميقة متعددة الوسائط. صُمّم ليشكل بيئة معيارية ذات استقلالية تشغيلية عالية، ويتيح تحكمًا دلاليًا مرنًا في مكونات الصورة",
+                "بنية برمجية شاملة موجهة لمعالجة الصور باستخدام تقنيات الذكاء الاصطناعي التوليدي عبر نماذج عميقة متعددة الوسائط. صُمّم ليشكل بيئة معيارية ذات استقلالية تشغيلية عالية، ويتيح تحكمًا دلاليًا م��نًا في مكونات الصورة",
               )}
             </p>
 
