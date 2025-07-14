@@ -1,18 +1,18 @@
-import React, { useState } from 'react';
-import { Enhanced3DBackground } from '../components/Enhanced3DBackground';
-import { EnhancedServiceGrid } from '../components/EnhancedServiceGrid';
-import { ServiceControlPanel } from '../components/ServiceControlPanel';
-import { AdvancedImageCanvas } from '../components/AdvancedImageCanvas';
-import { PromptNexus } from '../components/PromptNexus';
-import { ProcessingModal } from '../components/ProcessingModal';
-import { CompleteLocalAITools } from '../components/CompleteLocalAITools';
-import { AdvancedAIModelsManager } from '../components/AdvancedAIModelsManager';
-import { ArtisticTemplatesGallery } from '../components/ArtisticTemplatesGallery';
-import { TemplateProcessor } from '../components/TemplateProcessor';
-import { ComprehensiveAIWorkstation } from '../components/ComprehensiveAIWorkstation';
-import { ArtisticTemplate } from '../data/artisticTemplates';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import React, { useState } from "react";
+import { Enhanced3DBackground } from "../components/Enhanced3DBackground";
+import { EnhancedServiceGrid } from "../components/EnhancedServiceGrid";
+import { ServiceControlPanel } from "../components/ServiceControlPanel";
+import { AdvancedImageCanvas } from "../components/AdvancedImageCanvas";
+import { PromptNexus } from "../components/PromptNexus";
+import { ProcessingModal } from "../components/ProcessingModal";
+import { CompleteLocalAITools } from "../components/CompleteLocalAITools";
+import { AdvancedAIModelsManager } from "../components/AdvancedAIModelsManager";
+import { ArtisticTemplatesGallery } from "../components/ArtisticTemplatesGallery";
+import { TemplateProcessor } from "../components/TemplateProcessor";
+import { ComprehensiveAIWorkstation } from "../components/ComprehensiveAIWorkstation";
+import { ArtisticTemplate } from "../data/artisticTemplates";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 interface TransformRequest {
   serviceId: string;
   imageUrl: string;
@@ -22,18 +22,27 @@ interface TransformRequest {
 }
 
 export default function EnhancedHome() {
-  const [selectedService, setSelectedService] = useState<string>('');
+  const [selectedService, setSelectedService] = useState<string>("");
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
-  const [selectionData, setSelectionData] = useState<string>('');
+  const [selectionData, setSelectionData] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState(false);
-  const [processingMessage, setProcessingMessage] = useState('');
+  const [processingMessage, setProcessingMessage] = useState("");
   const [processingProgress, setProcessingProgress] = useState(0);
   const [resultImage, setResultImage] = useState<string | null>(null);
   const [showResults, setShowResults] = useState(false);
-  const [activeTab, setActiveTab] = useState<string>('services');
-  const [selectedTool, setSelectedTool] = useState<string>('');
-  const [selectedTemplate, setSelectedTemplate] = useState<ArtisticTemplate | null>(null);
+  const [activeTab, setActiveTab] = useState<string>("services");
+  const [selectedTool, setSelectedTool] = useState<string>("");
+  const [selectedTemplate, setSelectedTemplate] =
+    useState<ArtisticTemplate | null>(null);
   const [userHasVIP, setUserHasVIP] = useState<boolean>(false);
+
+  // إصلاح: التأكد من أن المعالجة لا تبدأ تلقائياً
+  React.useEffect(() => {
+    // إعادة تعيين حالة المعالجة عند التحميل الأول
+    setIsProcessing(false);
+    setProcessingProgress(0);
+    setProcessingMessage("");
+  }, []);
 
   const handleServiceSelect = (serviceId: string) => {
     setSelectedService(serviceId);
@@ -52,12 +61,12 @@ export default function EnhancedHome() {
 
   const handleTransform = async (prompt: string, quality: string) => {
     if (!selectedService || !uploadedImage) {
-      alert('الرجاء اختيار خدمة ورفع صورة أولاً');
+      alert("الرجاء اختيار خدمة ورفع صورة أولاً");
       return;
     }
 
     setIsProcessing(true);
-    setProcessingMessage('جاري تحضير الطلب...');
+    setProcessingMessage("جاري تحضير الطلب...");
     setProcessingProgress(10);
 
     try {
@@ -66,54 +75,53 @@ export default function EnhancedHome() {
         imageUrl: uploadedImage,
         prompt,
         selectionData: selectionData || undefined,
-        quality
+        quality,
       };
 
-      setProcessingMessage('جاري معالجة الصورة بالذكاء الاصطناعي...');
+      setProcessingMessage("جاري معالجة ا��صورة بالذكاء الاصطناعي...");
       setProcessingProgress(30);
 
-      const response = await fetch('/api/ai-transform', {
-        method: 'POST',
+      const response = await fetch("/api/ai-transform", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(transformRequest),
       });
 
       setProcessingProgress(70);
-      
+
       if (!response.ok) {
-        throw new Error('فشل في معالجة الصورة');
+        throw new Error("فشل في معالجة الصورة");
       }
 
       const result = await response.json();
-      
-      setProcessingMessage('جاري تحضير النتيجة...');
+
+      setProcessingMessage("جاري تحضير النتيجة...");
       setProcessingProgress(90);
-      
+
       // Simulate final processing
       setTimeout(() => {
         setResultImage(result.imageUrl);
         setProcessingProgress(100);
-        setProcessingMessage('اكتملت المعالجة بنجاح!');
-        
+        setProcessingMessage("اكتملت المعالجة بنجاح!");
+
         setTimeout(() => {
           setIsProcessing(false);
           setShowResults(true);
         }, 1000);
       }, 1000);
-
     } catch (error) {
-      console.error('Transform error:', error);
+      console.error("Transform error:", error);
       setIsProcessing(false);
-      alert('حدث خطأ في معالجة الصورة. الرجاء المحاولة مرة أخرى.');
+      alert("حدث خطأ في معالجة الصورة. الرجاء المحاولة مرة أخرى.");
     }
   };
 
   const resetWorkspace = () => {
-    setSelectedService('');
+    setSelectedService("");
     setUploadedImage(null);
-    setSelectionData('');
+    setSelectionData("");
     setResultImage(null);
     setShowResults(false);
     setSelectedTemplate(null);
@@ -121,50 +129,54 @@ export default function EnhancedHome() {
 
   const handleTemplateSelect = (template: ArtisticTemplate) => {
     setSelectedTemplate(template);
-    setActiveTab('template-processor');
+    setActiveTab("template-processor");
   };
 
   const handleTemplateBack = () => {
     setSelectedTemplate(null);
-    setActiveTab('templates');
+    setActiveTab("templates");
   };
 
   return (
     <div className="min-h-screen relative">
       <Enhanced3DBackground />
-      
+
       <div className="relative z-10">
         {!selectedService && !showResults && (
           <div className="container mx-auto px-6 py-8">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <Tabs
+              value={activeTab}
+              onValueChange={setActiveTab}
+              className="w-full"
+            >
               <div className="flex justify-center mb-8">
                 <TabsList className="bg-black/20 backdrop-blur-sm border border-white/20 p-1 rounded-xl">
-                  <TabsTrigger 
-                    value="services" 
+                  <TabsTrigger
+                    value="services"
                     className="text-white data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400 px-6 py-3 rounded-lg transition-all"
                   >
                     🌐 خدمات الذكاء الاصطناعي
                   </TabsTrigger>
-                  <TabsTrigger 
-                    value="local-tools" 
+                  <TabsTrigger
+                    value="local-tools"
                     className="text-white data-[state=active]:bg-purple-500/20 data-[state=active]:text-purple-400 px-6 py-3 rounded-lg transition-all"
                   >
                     🔧 الأدوات المحلية (30 أداة)
                   </TabsTrigger>
-                  <TabsTrigger 
-                    value="models" 
+                  <TabsTrigger
+                    value="models"
                     className="text-white data-[state=active]:bg-pink-500/20 data-[state=active]:text-pink-400 px-6 py-3 rounded-lg transition-all"
                   >
                     🤖 إدارة النماذج
                   </TabsTrigger>
-                  <TabsTrigger 
-                    value="templates" 
+                  <TabsTrigger
+                    value="templates"
                     className="text-white data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400 px-6 py-3 rounded-lg transition-all"
                   >
                     🎨 التمبلتات الفنية +18 (50+)
                   </TabsTrigger>
-                  <TabsTrigger 
-                    value="workstation" 
+                  <TabsTrigger
+                    value="workstation"
                     className="text-white data-[state=active]:bg-indigo-500/20 data-[state=active]:text-indigo-400 px-6 py-3 rounded-lg transition-all"
                   >
                     🚀 ورشة العمل الشاملة
@@ -174,22 +186,22 @@ export default function EnhancedHome() {
 
               <TabsContent value="services" className="mt-0">
                 {!selectedService ? (
-                  <EnhancedServiceGrid 
+                  <EnhancedServiceGrid
                     onServiceSelect={handleServiceSelect}
                     selectedService={selectedService}
                   />
                 ) : (
                   <div className="space-y-6">
                     <div className="flex justify-between items-center">
-                      <Button 
-                        onClick={() => setSelectedService('')}
-                        variant="ghost" 
+                      <Button
+                        onClick={() => setSelectedService("")}
+                        variant="ghost"
                         className="text-white hover:bg-white/10"
                       >
                         ← العودة للخدمات
                       </Button>
                     </div>
-                    
+
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                       <div className="lg:col-span-1">
                         <ServiceControlPanel
@@ -198,7 +210,7 @@ export default function EnhancedHome() {
                           isProcessing={isProcessing}
                         />
                       </div>
-                      
+
                       <div className="lg:col-span-2">
                         <AdvancedImageCanvas
                           onImageUpload={handleImageUpload}
@@ -212,7 +224,7 @@ export default function EnhancedHome() {
               </TabsContent>
 
               <TabsContent value="local-tools" className="mt-0">
-                <CompleteLocalAITools 
+                <CompleteLocalAITools
                   selectedTool={selectedTool}
                   onToolSelect={setSelectedTool}
                 />
@@ -223,7 +235,7 @@ export default function EnhancedHome() {
               </TabsContent>
 
               <TabsContent value="templates" className="mt-0">
-                <ArtisticTemplatesGallery 
+                <ArtisticTemplatesGallery
                   onTemplateSelect={handleTemplateSelect}
                   userHasVIP={userHasVIP}
                 />
@@ -254,7 +266,7 @@ export default function EnhancedHome() {
               <Button
                 onClick={() => {
                   resetWorkspace();
-                  setActiveTab('services');
+                  setActiveTab("services");
                 }}
                 variant="outline"
                 className="mb-4 bg-white/10 border-white/20 text-white hover:bg-white/20"
@@ -262,14 +274,16 @@ export default function EnhancedHome() {
                 ← العودة للخدمات
               </Button>
               <h1 className="text-3xl font-bold text-white mb-2">
-                {selectedService === 'magic-transform' && 'التحويل السحري'}
-                {selectedService === 'remove-replace' && 'إزالة واستبدال'}
-                {selectedService === 'style-transfer' && 'نقل الأسلوب'}
-                {selectedService === 'text-image-add' && 'إضافة نص للصورة'}
-                {selectedService === 'background-replace' && 'استبدال الخلفية'}
-                {selectedService === 'object-recolor' && 'إعادة تلوين الكائنات'}
-                {selectedService === 'ai-enhance' && 'التحسين بالذكاء الاصطناعي'}
-                {selectedService === 'vip-magic-morph' && 'التحويل السحري المتقدم'}
+                {selectedService === "magic-transform" && "التحويل السحري"}
+                {selectedService === "remove-replace" && "إزالة واستبدال"}
+                {selectedService === "style-transfer" && "نقل الأسلوب"}
+                {selectedService === "text-image-add" && "إضافة نص للصورة"}
+                {selectedService === "background-replace" && "استبدال الخلفية"}
+                {selectedService === "object-recolor" && "إعادة تلوين الكائنات"}
+                {selectedService === "ai-enhance" &&
+                  "التحسين بالذكاء الاصطناعي"}
+                {selectedService === "vip-magic-morph" &&
+                  "التحويل السحري المتقدم"}
               </h1>
               <p className="text-white/70">
                 قم برفع صورة وإدخال الأوامر للحصول على نتائج مذهلة
@@ -280,7 +294,9 @@ export default function EnhancedHome() {
               {/* Image Canvas */}
               <div className="space-y-6">
                 <div className="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-6">
-                  <h3 className="text-white font-semibold mb-4">رفع وتحديد الصورة</h3>
+                  <h3 className="text-white font-semibold mb-4">
+                    رفع وتحديد الصورة
+                  </h3>
                   <AdvancedImageCanvas
                     onImageUpload={handleImageUpload}
                     onSelectionChange={handleSelectionChange}
@@ -292,7 +308,9 @@ export default function EnhancedHome() {
               {/* Prompt Interface */}
               <div className="space-y-6">
                 <div className="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-6">
-                  <h3 className="text-white font-semibold mb-4">كيف تريد تحويل صورتك؟</h3>
+                  <h3 className="text-white font-semibold mb-4">
+                    كيف تريد تحويل صورتك؟
+                  </h3>
                   <PromptNexus
                     selectedService={selectedService}
                     onTransform={handleTransform}
@@ -302,7 +320,9 @@ export default function EnhancedHome() {
 
                 {/* Service Info */}
                 <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-6">
-                  <h4 className="text-white/90 font-medium mb-3">معلومات الخدمة</h4>
+                  <h4 className="text-white/90 font-medium mb-3">
+                    معلومات الخدمة
+                  </h4>
                   <div className="space-y-2 text-sm text-white/70">
                     <div>⏱️ وقت المعالجة: 10-30 ثانية</div>
                     <div>🎯 دقة النتائج: عالية جداً</div>
@@ -318,19 +338,23 @@ export default function EnhancedHome() {
         {showResults && (
           <div className="container mx-auto px-6 py-8">
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-white mb-2">النتيجة النهائية</h2>
+              <h2 className="text-3xl font-bold text-white mb-2">
+                النتيجة النهائية
+              </h2>
               <p className="text-white/70">مقارنة الصورة الأصلية مع النتيجة</p>
             </div>
 
             <div className="grid md:grid-cols-2 gap-8 mb-8">
               {/* Original Image */}
               <div className="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-6">
-                <h3 className="text-white font-semibold mb-4">الصورة الأصلية</h3>
+                <h3 className="text-white font-semibold mb-4">
+                  الصورة الأصلية
+                </h3>
                 <div className="aspect-square bg-black/20 rounded-xl overflow-hidden">
                   {uploadedImage && (
-                    <img 
-                      src={uploadedImage} 
-                      alt="Original" 
+                    <img
+                      src={uploadedImage}
+                      alt="Original"
                       className="w-full h-full object-cover"
                     />
                   )}
@@ -339,12 +363,14 @@ export default function EnhancedHome() {
 
               {/* Result Image */}
               <div className="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-6">
-                <h3 className="text-white font-semibold mb-4">النتيجة المحولة</h3>
+                <h3 className="text-white font-semibold mb-4">
+                  النتيجة المحولة
+                </h3>
                 <div className="aspect-square bg-black/20 rounded-xl overflow-hidden">
                   {resultImage && (
-                    <img 
-                      src={resultImage} 
-                      alt="Result" 
+                    <img
+                      src={resultImage}
+                      alt="Result"
                       className="w-full h-full object-cover"
                     />
                   )}
@@ -363,9 +389,9 @@ export default function EnhancedHome() {
               {resultImage && (
                 <Button
                   onClick={() => {
-                    const link = document.createElement('a');
+                    const link = document.createElement("a");
                     link.href = resultImage;
-                    link.download = 'knoux-result.jpg';
+                    link.download = "knoux-result.jpg";
                     link.click();
                   }}
                   className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
