@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Enhanced3DBackground } from "../components/Enhanced3DBackground";
 import { EnhancedServiceGrid } from "../components/EnhancedServiceGrid";
 import { ServiceControlPanel } from "../components/ServiceControlPanel";
