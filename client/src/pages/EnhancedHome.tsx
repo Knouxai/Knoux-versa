@@ -1,4 +1,3 @@
-import React, { useState } from "react";
 import React, { useState, useEffect } from "react";
 import { Enhanced3DBackground } from "../components/Enhanced3DBackground";
 import { EnhancedServiceGrid } from "../components/EnhancedServiceGrid";
@@ -95,7 +94,7 @@ export default function EnhancedHome() {
         quality,
       };
 
-      setProcessingMessage("جاري معالجة ا��صورة بالذكاء الاصطناعي...");
+      setProcessingMessage("جاري معالجة ا��صورة بالذكاء الاصط��اعي...");
       setProcessingProgress(30);
 
       const response = await fetch("/api/ai-transform", {
