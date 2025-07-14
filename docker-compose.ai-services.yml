@@ -1,0 +1,633 @@
+# KNOUX VERSA - AI Services Docker Compose
+# تكوين Docker لجميع خدمات الذكاء الاصطناعي المتقدمة
+
+version: "3.8"
+
+services:
+  # ================== FACE PROCESSING SERVICES ==================
+  face-swap-service:
+    image: knoux/deepfacelab:latest
+    container_name: knoux-face-swap
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+        limits:
+          memory: 4G
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - CUDA_VISIBLE_DEVICES=0
+      - MODEL_PATH=/models/deepfacelab-saehd
+      - BATCH_SIZE=1
+      - QUALITY_MODE=ultra
+    volumes:
+      - ./ai-models/face-swap:/models
+      - ./temp/face-swap:/workspace
+    ports:
+      - "8001:8000"
+    networks:
+      - ai-network
+
+  beauty-filter-service:
+    image: knoux/phi3-vision:latest
+    container_name: knoux-beauty-filter
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+        limits:
+          memory: 3G
+    environment:
+      - MODEL_PATH=/models/phi3-vision-4b
+      - PROCESSING_MODE=beauty_enhancement
+    volumes:
+      - ./ai-models/beauty-filter:/models
+      - ./temp/beauty-filter:/workspace
+    ports:
+      - "8002:8000"
+    networks:
+      - ai-network
+
+  emotion-net-service:
+    image: knoux/emotion-net:latest
+    container_name: knoux-emotion-net
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+        limits:
+          memory: 2G
+    environment:
+      - MODEL_PATH=/models/emotion-net-v2
+      - EXPRESSION_MODES=smile,sad,angry,surprise,neutral
+    volumes:
+      - ./ai-models/emotion-net:/models
+      - ./temp/emotion-net:/workspace
+    ports:
+      - "8003:8000"
+    networks:
+      - ai-network
+
+  age-transform-service:
+    image: knoux/age-gan:latest
+    container_name: knoux-age-transform
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+        limits:
+          memory: 3G
+    environment:
+      - MODEL_PATH=/models/age-gan-v3
+      - AGE_RANGE=-30,+30
+    volumes:
+      - ./ai-models/age-transform:/models
+      - ./temp/age-transform:/workspace
+    ports:
+      - "8004:8000"
+    networks:
+      - ai-network
+
+  gender-swap-service:
+    image: knoux/gender-gan:latest
+    container_name: knoux-gender-swap
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+        limits:
+          memory: 4G
+    environment:
+      - MODEL_PATH=/models/gender-gan-hd
+      - VIP_REQUIRED=true
+    volumes:
+      - ./ai-models/gender-swap:/models
+      - ./temp/gender-swap:/workspace
+    ports:
+      - "8005:8000"
+    networks:
+      - ai-network
+
+  makeup-artist-service:
+    image: knoux/makeup-gan:latest
+    container_name: knoux-makeup-artist
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+        limits:
+          memory: 2G
+    environment:
+      - MODEL_PATH=/models/makeup-gan-pro
+      - MAKEUP_STYLES=natural,dramatic,gothic,vintage,colorful
+    volumes:
+      - ./ai-models/makeup-artist:/models
+      - ./temp/makeup-artist:/workspace
+    ports:
+      - "8006:8000"
+    networks:
+      - ai-network
+
+  # ================== BODY MODIFICATION SERVICES ==================
+  body-sculptor-service:
+    image: knoux/body-gan:latest
+    container_name: knoux-body-sculptor
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+        limits:
+          memory: 6G
+    environment:
+      - MODEL_PATH=/models/body-gan-ultra
+      - VIP_REQUIRED=true
+      - MAX_INTENSITY=100
+    volumes:
+      - ./ai-models/body-sculptor:/models
+      - ./temp/body-sculptor:/workspace
+    ports:
+      - "8007:8000"
+    networks:
+      - ai-network
+
+  clothing-swap-service:
+    image: knoux/clothing-gan:latest
+    container_name: knoux-clothing-swap
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+        limits:
+          memory: 5G
+    environment:
+      - MODEL_PATH=/models/clothing-gan-v2
+      - VIP_REQUIRED=true
+      - CLOTHING_TYPES=dress,suit,casual,formal,swimwear,lingerie
+    volumes:
+      - ./ai-models/clothing-swap:/models
+      - ./temp/clothing-swap:/workspace
+    ports:
+      - "8008:8000"
+    networks:
+      - ai-network
+
+  tattoo-studio-service:
+    image: knoux/tattoo-gan:latest
+    container_name: knoux-tattoo-studio
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+        limits:
+          memory: 3G
+    environment:
+      - MODEL_PATH=/models/tattoo-gan-hd
+      - TATTOO_STYLES=tribal,realistic,abstract,traditional,watercolor
+    volumes:
+      - ./ai-models/tattoo-studio:/models
+      - ./temp/tattoo-studio:/workspace
+    ports:
+      - "8009:8000"
+    networks:
+      - ai-network
+
+  muscle-enhancer-service:
+    image: knoux/muscle-gan:latest
+    container_name: knoux-muscle-enhancer
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+        limits:
+          memory: 4G
+    environment:
+      - MODEL_PATH=/models/muscle-gan-pro
+      - MUSCLE_GROUPS=arms,chest,abs,legs,shoulders
+    volumes:
+      - ./ai-models/muscle-enhancer:/models
+      - ./temp/muscle-enhancer:/workspace
+    ports:
+      - "8010:8000"
+    networks:
+      - ai-network
+
+  # ================== BACKGROUND & ENVIRONMENT SERVICES ==================
+  background-remover-service:
+    image: knoux/sam-bg:latest
+    container_name: knoux-bg-remover
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+        limits:
+          memory: 4G
+    environment:
+      - MODEL_PATH=/models/sam-vit-h
+      - PRECISION_MODE=ultra
+    volumes:
+      - ./ai-models/background-remover:/models
+      - ./temp/background-remover:/workspace
+    ports:
+      - "8011:8000"
+    networks:
+      - ai-network
+
+  background-replacer-service:
+    image: knoux/sdxl-bg:latest
+    container_name: knoux-bg-replacer
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+        limits:
+          memory: 8G
+    environment:
+      - MODEL_PATH=/models/sdxl-turbo
+      - GENERATION_QUALITY=ultra
+    volumes:
+      - ./ai-models/background-replacer:/models
+      - ./temp/background-replacer:/workspace
+    ports:
+      - "8012:8000"
+    networks:
+      - ai-network
+
+  lighting-master-service:
+    image: knoux/lighting-net:latest
+    container_name: knoux-lighting-master
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+        limits:
+          memory: 3G
+    environment:
+      - MODEL_PATH=/models/lighting-net-v3
+      - LIGHTING_STYLES=studio,natural,dramatic,soft,golden_hour
+    volumes:
+      - ./ai-models/lighting-master:/models
+      - ./temp/lighting-master:/workspace
+    ports:
+      - "8013:8000"
+    networks:
+      - ai-network
+
+  # ================== ARTISTIC TRANSFORMATION SERVICES ==================
+  style-transfer-service:
+    image: knoux/style-gan:latest
+    container_name: knoux-style-transfer
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+        limits:
+          memory: 6G
+    environment:
+      - MODEL_PATH=/models/style-gan3-t
+      - ART_STYLES=anime,oil_painting,watercolor,pencil,van_gogh,picasso,realistic
+    volumes:
+      - ./ai-models/style-transfer:/models
+      - ./temp/style-transfer:/workspace
+    ports:
+      - "8014:8000"
+    networks:
+      - ai-network
+
+  cartoon-transformer-service:
+    image: knoux/cartoon-gan:latest
+    container_name: knoux-cartoon-transformer
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+        limits:
+          memory: 4G
+    environment:
+      - MODEL_PATH=/models/cartoon-gan-v4
+      - CARTOON_STYLES=disney,pixar,anime,comic,manga
+    volumes:
+      - ./ai-models/cartoon-transformer:/models
+      - ./temp/cartoon-transformer:/workspace
+    ports:
+      - "8015:8000"
+    networks:
+      - ai-network
+
+  colorizer-service:
+    image: knoux/colorizer:latest
+    container_name: knoux-colorizer
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+        limits:
+          memory: 3G
+    environment:
+      - MODEL_PATH=/models/colorization-net-hd
+      - COLOR_SCHEMES=automatic,vintage,modern,sepia,custom
+    volumes:
+      - ./ai-models/colorizer:/models
+      - ./temp/colorizer:/workspace
+    ports:
+      - "8016:8000"
+    networks:
+      - ai-network
+
+  # ================== TECHNICAL ENHANCEMENT SERVICES ==================
+  super-resolution-service:
+    image: knoux/esrgan:latest
+    container_name: knoux-super-resolution
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+        limits:
+          memory: 4G
+    environment:
+      - MODEL_PATH=/models/real-esrgan-x4
+      - UPSCALE_FACTORS=2,3,4,8
+    volumes:
+      - ./ai-models/super-resolution:/models
+      - ./temp/super-resolution:/workspace
+    ports:
+      - "8017:8000"
+    networks:
+      - ai-network
+
+  face-restorer-service:
+    image: knoux/gfpgan:latest
+    container_name: knoux-face-restorer
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+        limits:
+          memory: 1G
+    environment:
+      - MODEL_PATH=/models/gfpgan
+      - RESTORATION_QUALITY=ultra
+    volumes:
+      - ./ai-models/face-restorer:/models
+      - ./temp/face-restorer:/workspace
+    ports:
+      - "8018:8000"
+    networks:
+      - ai-network
+
+  denoiser-service:
+    image: knoux/denoiser:latest
+    container_name: knoux-denoiser
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+    environment:
+      - MODEL_PATH=/models/dncnn-color
+      - NOISE_LEVELS=light,medium,heavy
+    volumes:
+      - ./ai-models/denoiser:/models
+      - ./temp/denoiser:/workspace
+    ports:
+      - "8019:8000"
+    networks:
+      - ai-network
+
+  # ================== ADVANCED/VIP SERVICES ==================
+  pose-editor-service:
+    image: knoux/pose-gan:latest
+    container_name: knoux-pose-editor
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+        limits:
+          memory: 8G
+    environment:
+      - MODEL_PATH=/models/pose-gan-ultra
+      - VIP_REQUIRED=true
+      - MAX_CONCURRENT=1
+    volumes:
+      - ./ai-models/pose-editor:/models
+      - ./temp/pose-editor:/workspace
+    ports:
+      - "8020:8000"
+    networks:
+      - ai-network
+
+  mega-gan-service:
+    image: knoux/mega-gan:latest
+    container_name: knoux-mega-gan
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 2
+              capabilities: [gpu]
+        limits:
+          memory: 16G
+    environment:
+      - MODEL_PATH=/models/mega-gan-turbo
+      - VIP_REQUIRED=true
+      - SADEK_EXCLUSIVE=true
+      - MAX_CONCURRENT=1
+    volumes:
+      - ./ai-models/mega-gan:/models
+      - ./temp/mega-gan:/workspace
+    ports:
+      - "8021:8000"
+    networks:
+      - ai-network
+
+  inpainting-service:
+    image: knoux/inpainting:latest
+    container_name: knoux-inpainting
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+        limits:
+          memory: 5G
+    environment:
+      - MODEL_PATH=/models/inpainting-gan-v3
+      - FILL_QUALITY=intelligent
+    volumes:
+      - ./ai-models/inpainting:/models
+      - ./temp/inpainting:/workspace
+    ports:
+      - "8022:8000"
+    networks:
+      - ai-network
+
+  # ================== SUPPORTING SERVICES ==================
+  ai-orchestrator:
+    image: knoux/ai-orchestrator:latest
+    container_name: knoux-ai-orchestrator
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - POSTGRES_URL=postgresql://postgres:password@postgres:5432/knoux_versa
+      - GPU_SCHEDULER_ENABLED=true
+      - VIP_PROCESSING_PRIORITY=true
+    volumes:
+      - ./logs/orchestrator:/logs
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - ai-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: knoux-redis
+    volumes:
+      - redis-data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - ai-network
+
+  postgres:
+    image: postgres:15
+    container_name: knoux-postgres
+    environment:
+      - POSTGRES_DB=knoux_versa
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - ai-network
+
+  # ================== MONITORING & HEALTH ==================
+  ai-health-monitor:
+    image: knoux/health-monitor:latest
+    container_name: knoux-health-monitor
+    environment:
+      - MONITOR_SERVICES=face-swap,beauty-filter,body-sculptor,mega-gan
+      - ALERT_THRESHOLD_GPU=90
+      - ALERT_THRESHOLD_MEMORY=85
+    volumes:
+      - ./logs/health:/logs
+    ports:
+      - "8080:8080"
+    networks:
+      - ai-network
+
+  nginx-load-balancer:
+    image: nginx:alpine
+    container_name: knoux-nginx
+    volumes:
+      - ./nginx/ai-services.conf:/etc/nginx/nginx.conf
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - ai-orchestrator
+    networks:
+      - ai-network
+
+# ================== NETWORKS & VOLUMES ==================
+networks:
+  ai-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  redis-data:
+  postgres-data:
+  ai-models:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./ai-models
+  temp-workspace:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./temp
+
+# ================== DEPLOYMENT CONFIGS ==================
+x-gpu-service: &gpu-service
+  deploy:
+    resources:
+      reservations:
+        devices:
+          - driver: nvidia
+            count: 1
+            capabilities: [gpu]
+
+x-common-env: &common-env
+  NVIDIA_VISIBLE_DEVICES: all
+  CUDA_VISIBLE_DEVICES: "0"
+  LOG_LEVEL: info
+  API_TIMEOUT: 300
+  MAX_CONCURRENT_REQUESTS: 3
