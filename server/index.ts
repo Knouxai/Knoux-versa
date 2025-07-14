@@ -11,6 +11,7 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { aiServiceManager } from "./ai/core/AIServiceManager";
 import aiRoutes from "./ai/routes/aiRoutes";
+import optimizedAiRoutes from "./ai/routes/optimizedAiRoutes";
 import {
   monitorPerformance,
   getCurrentMetrics,
@@ -204,7 +205,8 @@ app.use((req, res, next) => {
   }
 
   // Register AI routes
-  app.use("/api/ai", aiRoutes);
+  app.use("/api/ai", optimizedAiRoutes);
+  app.use("/api/ai/legacy", aiRoutes);
 
   // AI service status endpoint
   app.get("/api/ai-status", (req, res) => {
