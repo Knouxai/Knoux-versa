@@ -40,10 +40,20 @@ export default function EnhancedHome() {
   // إصلاح: التأكد من أن المعالجة لا تبدأ تلقائياً
   useEffect(() => {
     // إعادة تعيين حالة المعالجة عند التحميل الأول
+    console.log("🔧 EnhancedHome: إعادة تعيين حالة المعالجة");
     setIsProcessing(false);
     setProcessingProgress(0);
     setProcessingMessage("");
   }, []);
+
+  // تتبع تغييرات حالة المعالجة
+  useEffect(() => {
+    console.log("🔄 EnhancedHome: تغيرت حالة المعالجة:", {
+      isProcessing,
+      processingMessage,
+      processingProgress,
+    });
+  }, [isProcessing, processingMessage, processingProgress]);
 
   const handleServiceSelect = (serviceId: string) => {
     setSelectedService(serviceId);
