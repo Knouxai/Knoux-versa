@@ -137,13 +137,18 @@ export function ComprehensiveAIWorkstation({
     setIsProcessing(true);
     setProgress(0);
 
+    // إخطار المكون الأب بحالة المعالجة
+    onProcessingChange?.(true, "بدء معالجة ورشة العمل...", 0);
+
     for (let i = 0; i <= 100; i += 2) {
       setProgress(i);
+      onProcessingChange?.(true, `معالجة ورشة العمل... ${i}%`, i);
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
 
     setIsProcessing(false);
     setProgress(0);
+    onProcessingChange?.(false, "", 0);
   };
 
   const currentWorkspace = workspaces.find((w) => w.id === activeWorkspace);
