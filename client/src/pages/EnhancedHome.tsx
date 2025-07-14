@@ -259,7 +259,13 @@ export default function EnhancedHome() {
               </TabsContent>
 
               <TabsContent value="workstation" className="mt-0">
-                <ComprehensiveAIWorkstation />
+                <ComprehensiveAIWorkstation
+                  onProcessingChange={(processing, message, progress) => {
+                    setIsProcessing(processing);
+                    setProcessingMessage(message || "");
+                    setProcessingProgress(progress || 0);
+                  }}
+                />
               </TabsContent>
             </Tabs>
           </div>
