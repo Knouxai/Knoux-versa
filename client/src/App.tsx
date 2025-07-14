@@ -26,29 +26,31 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AIServiceProvider>
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-          <Router>
-            <Switch>
-              {/* Main Routes */}
-              <Route path="/" component={EnhancedHome} />
-              <Route path="/home" component={Home} />
-              <Route path="/about" component={About} />
-              <Route path="/builder" component={Builder} />
+      <LanguageProvider>
+        <AIServiceProvider>
+          <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+            <Router>
+              <Switch>
+                {/* Main Routes */}
+                <Route path="/" component={EnhancedHome} />
+                <Route path="/home" component={Home} />
+                <Route path="/about" component={About} />
+                <Route path="/builder" component={Builder} />
 
-              {/* Elysian Canvas Gallery */}
-              <Route path="/elysian" component={ElysianGallery} />
-              <Route path="/gallery" component={ElysianGallery} />
-              <Route path="/elysian-canvas" component={ElysianGallery} />
+                {/* Elysian Canvas Gallery */}
+                <Route path="/elysian" component={ElysianGallery} />
+                <Route path="/gallery" component={ElysianGallery} />
+                <Route path="/elysian-canvas" component={ElysianGallery} />
 
-              {/* Fallback */}
-              <Route component={NotFound} />
-            </Switch>
-          </Router>
+                {/* Fallback */}
+                <Route component={NotFound} />
+              </Switch>
+            </Router>
 
-          <Toaster />
-        </div>
-      </AIServiceProvider>
+            <Toaster />
+          </div>
+        </AIServiceProvider>
+      </LanguageProvider>
     </QueryClientProvider>
   );
 }
