@@ -66,6 +66,12 @@ export default function EnhancedHome() {
       return;
     }
 
+    // حماية إضافية: عدم بدء معالجة جديدة إذا كانت هناك معالجة جارية
+    if (isProcessing) {
+      console.log("معالجة جارية بالفعل، يتم تجاهل الطلب الجديد");
+      return;
+    }
+
     setIsProcessing(true);
     setProcessingMessage("جاري تحضير الطلب...");
     setProcessingProgress(10);
