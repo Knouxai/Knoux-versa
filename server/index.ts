@@ -1,3 +1,7 @@
+// تحميل متغيرات البيئة أولاً
+import dotenv from "dotenv";
+dotenv.config();
+
 import express, { type Request, Response, NextFunction } from "express";
 import cors from "cors";
 import helmet from "helmet";
